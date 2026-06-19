@@ -26,76 +26,90 @@ function drawMap(ctx, map, pal, x, y, s = U) {
 }
 
 // ---------- personagens ----------
+// (grade 12 de largura; sombreamento embutido p/ dar volume)
 const MAJU_MAP = [
-  '..hhhh..',
-  '.hhhhhh.',
-  'hhhhhhhh',
-  'hffffffh',
-  'hfkffkfh',
-  'hffffffh',
-  'h.fmmf.h',
-  '..ffff..',
-  '.yyyyyy.',
-  'yyryyryy',
-  'yyyyyyyy',
-  '.yyyyyy.',
-  '..f..f..',
-  '..f..f..',
-  '.bb..bb.',
+  '....hhhh....',
+  '..hhhhhhhh..',
+  '.hHhhhhhhHh.',
+  '.hhffffffhh.',
+  '.hffffffffh.',
+  '.hfkffffkfh.',
+  '.hffffffffh.',
+  '.hffdmmdffh.',
+  '..hffffffh..',
+  '...ffffff...',
+  '..yyyyyyyy..',
+  '.fyyrYYryyf.',
+  '.dyyyYYyyyd.',
+  '..yyyYYyyy..',
+  '..yYyyyyYy..',
+  '..ff....ff..',
+  '..df....fd..',
+  '.bbb....bbb.',
 ];
-const MAJU_PAL = { h: '#2a1a12', f: '#a9683f', k: '#1c0f08', m: '#7c3a2d', y: '#f2c038', r: '#d94f4f', b: '#8a4b2a' };
+const MAJU_PAL = {
+  h: '#2a1a12', H: '#3d2719', f: '#a9683f', d: '#85502f', k: '#140a05',
+  w: '#c98a5a', m: '#7c3a2d', y: '#f2c038', Y: '#d49a2a', r: '#d94f4f', b: '#7a3f22',
+};
 
 const VOVO_MAP = [
-  '..pppp..',
-  '.pppppp.',
-  'pppppppp',
-  '.ffffff.',
-  '.fkffkf.',
-  '.ffffff.',
-  '.wwwwww.',
-  '.cccccc.',
-  'cccccccc',
-  'cccccccc',
-  '.nnnnnn.',
-  '..n..n..',
-  '..n..n..',
-  '.bb..bb.',
+  '...pppppp...',
+  '.PppppppppP.',
+  'pppppppppppp',
+  '...ffffff...',
+  '..ffffffdf..',
+  '..fkfwwkff..',
+  '..ffffffdf..',
+  '..fWwwwwWf..',
+  '..wwwwwwww..',
+  '...wwwwww...',
+  '..cccccccc..',
+  'fCccccccccCf',
+  '.CccccccccC.',
+  '..ccccccnc..',
+  '..nnnnnnnn..',
+  '..nnn..nnn..',
+  '..ndn..ndn..',
+  '.bbbb..bbbb.',
 ];
-const VOVO_PAL = { p: '#d9b25c', f: '#8a5a3a', k: '#1c0f08', w: '#e8e4da', c: '#3a6ea5', n: '#6b4a2f', b: '#4a3320' };
+const VOVO_PAL = {
+  p: '#d9b25c', P: '#bf983f', f: '#8a5a3a', d: '#6e4730', k: '#140a05',
+  w: '#ece8de', W: '#c9c4b8', c: '#3a6ea5', C: '#2c578a', n: '#6b4a2f', b: '#3d2a18',
+};
 
 const MAJU_FACE = [
   '.hhhhhhhhhh.',
   'hhhhhhhhhhhh',
-  'hhhhhhhhhhhh',
   'hhhffffffhhh',
   'hhffffffffhh',
-  'hffkffffkffh',
+  'hffffffffffh',
   'hffkffffkffh',
   'hffffffffffh',
-  'hhffmmmmffhh',
+  'hfffwddwfffh',
+  'hhffdmmdffhh',
   'hhffffffffhh',
   '.hhffffffhh.',
   '..hhhhhhhh..',
 ];
 const VOVO_FACE = [
   '...pppppp...',
-  '.pppppppppp.',
+  '.PppppppppP.',
   'pppppppppppp',
   '.hffffffffh.',
-  '.ffffffffff.',
-  '.ffkffffkff.',
-  '.ffffffffff.',
-  '.fwwffffwwf.',
+  '.fffffffffd.',
+  '.ffkffffkfd.',
+  '.ffffddfffd.',
+  '.fWwwffwwWf.',
   '.wwwwwwwwww.',
-  '.wwwwwwwwww.',
+  '.WwwwwwwwwW.',
   '..wwwwwwww..',
-  '...wwwwww...',
+  '...WwwwwW...',
 ];
 const FACE_PAL = {
-  h: '#2a1a12', f: '#a9683f', k: '#1c0f08', m: '#7c3a2d',
-  p: '#d9b25c', w: '#e8e4da',
+  h: '#2a1a12', H: '#3d2719', f: '#a9683f', d: '#85502f', k: '#140a05',
+  w: '#c98a5a', m: '#7c3a2d', p: '#d9b25c', P: '#bf983f', W: '#c9c4b8',
 };
-const VOVO_FACE_PAL = { ...FACE_PAL, f: '#8a5a3a' };
+const VOVO_FACE_PAL = { ...FACE_PAL, f: '#8a5a3a', d: '#6e4730', w: '#ece8de', W: '#c9c4b8' };
 
 const CRAB_MAP = [
   'c..........c',
@@ -154,10 +168,73 @@ function sun(ctx, cx, cy, r, t, core = '#ffd94a', glow = '#ffb24a') {
   PR(ctx, cx - r * 0.8, cy - r * 0.8, r * 1.6, r * 1.6, core);
 }
 
+function moon(ctx, cx, cy, r, c = '#f0ead0') {
+  PR(ctx, cx - r, cy - r / 2, r * 2, r, c);
+  PR(ctx, cx - r / 2, cy - r, r, r * 2, c);
+  PR(ctx, cx - r * 0.8, cy - r * 0.8, r * 1.6, r * 1.6, c);
+  PR(ctx, cx - 4, cy - 5, 5, 5, 'rgba(80,70,90,0.18)'); // crateras
+  PR(ctx, cx + 3, cy + 3, 4, 4, 'rgba(80,70,90,0.15)');
+  PR(ctx, cx - 6, cy + 4, 3, 3, 'rgba(80,70,90,0.12)');
+}
+
 function cloud(ctx, x, y, w, c = '#ffffff') {
-  PR(ctx, x, y, w, 10);
-  PR(ctx, x + w * 0.2, y - 6, w * 0.5, 8, c);
-  PR(ctx, x, y, w, 10, c);
+  // nuvem fofa em 3 níveis + base sombreada (volume)
+  PR(ctx, x, y + 4, w, 7, c);
+  PR(ctx, x + w * 0.12, y, w * 0.72, 8, c);
+  PR(ctx, x + w * 0.34, y - 5, w * 0.36, 8, c);
+  PR(ctx, x + w * 0.05, y + 9, w * 0.9, 2, 'rgba(0,0,0,0.07)');
+}
+
+// camadas de nuvens com deriva (parallax): defs = [{x,y,w,sp,c}]
+function cloudLayer(ctx, t, defs) {
+  for (const d of defs) {
+    const period = 360 + d.w * 2;
+    const x = ((d.x + t * d.sp) % period + period) % period - d.w;
+    cloud(ctx, x, d.y, d.w, d.c || '#ffffff');
+  }
+}
+
+// bando de pássaros/gaivotas atravessando (deriva = profundidade)
+function birds(ctx, t, n, y0, sp, c = '#2a3a4f') {
+  const span = 400;
+  for (let i = 0; i < n; i++) {
+    const x = ((i * 113 + t * sp) % span + span) % span - 20;
+    const y = y0 + (i * 53) % 46 + Math.sin(t * 1.5 + i) * 4;
+    const up = Math.sin(t * 7 + i * 2) > 0; // bater de asa
+    const dy = up ? -2 : 0;
+    PR(ctx, x - 4, y + (up ? 0 : 1), 3, 2, c);
+    PR(ctx, x - 1, y + dy, 2, 2, c);
+    PR(ctx, x + 1, y + dy, 2, 2, c);
+    PR(ctx, x + 3, y + (up ? 0 : 1), 3, 2, c);
+  }
+}
+
+// casario distante, azulado e esmaecido (perspectiva atmosférica)
+function casaFar(ctx, yBase, seed = 3, haze = 'rgba(150,178,205,0.5)') {
+  let x = -10, i = seed;
+  while (x < 360) {
+    const w = 28 + ((i * 7) % 3) * 6;
+    const h = 36 + ((i * 11) % 4) * 11;
+    PR(ctx, x, yBase - h, w, h, haze);
+    PR(ctx, x, yBase - h, w, 3, 'rgba(255,255,255,0.18)');
+    x += w + 7; i++;
+  }
+}
+
+// reflexo cintilante do sol/lua no mar — cone de glints espalhados
+function seaGlow(ctx, cx, y0, y1, t, c = 'rgba(255,228,120,0.5)') {
+  let row = 0;
+  for (let y = y0; y < y1; y += 5, row++) {
+    const k = (y - y0) / (y1 - y0);          // 0 perto do astro → 1 fundo
+    if (k > 0.2 && (row % 2) && Math.sin(t * 4 + y) < 0.1) continue; // gaps tremulando
+    const spread = 4 + k * 34;
+    const n = 1 + Math.floor(k * 2.5);
+    for (let b = 0; b < n; b++) {
+      const jit = Math.sin(t * 3.5 + y * 0.4 + b * 2.3) * spread;
+      const w = 5 + Math.abs(Math.sin(t * 3 + y * 0.2 + b)) * 7;
+      PR(ctx, cx + jit - w / 2, y, w, 2, c);
+    }
+  }
 }
 
 function casa(ctx, yBase, seed = 0) {
@@ -169,14 +246,21 @@ function casa(ctx, yBase, seed = 0) {
     const h = 70 + ((i * 7) % 4) * 14;
     const c = CASA_CORES[i % CASA_CORES.length];
     PR(ctx, x, yBase - h, w, h, c);
+    PR(ctx, x + w - 5, yBase - h, 5, h, 'rgba(0,0,0,0.15)'); // sombra lateral (volume)
     PR(ctx, x, yBase - h, w, 6, '#f5efe0'); // platibanda
+    PR(ctx, x, yBase - h + 6, w, 2, 'rgba(0,0,0,0.12)'); // sombra sob a platibanda
     // janelas coloniais
-    for (let wy = yBase - h + 14; wy < yBase - 16; wy += 22) {
+    for (let wy = yBase - h + 14; wy < yBase - 26; wy += 22) {
       for (let wx = x + 6; wx < x + w - 10; wx += 16) {
         PR(ctx, wx, wy, 8, 12, '#f5efe0');
         PR(ctx, wx + 1, wy + 2, 6, 9, '#2a3a4f');
+        PR(ctx, wx + 1, wy + 2, 3, 4, '#4a6a8f'); // brilho de vidro
       }
     }
+    // porta
+    PR(ctx, x + w / 2 - 6, yBase - 22, 12, 22, '#5a3a22');
+    PR(ctx, x + w / 2 - 4, yBase - 19, 8, 19, '#37261a');
+    PR(ctx, x + w / 2 + 1, yBase - 12, 2, 2, '#d9b25c'); // maçaneta
     x += w + 4;
     i++;
   }
@@ -234,17 +318,22 @@ function bandeirinhas(ctx, y, t) {
 }
 
 function coqueiro(ctx, x, yBase, h = 80) {
-  for (let i = 0; i < h; i += 8) {
-    PR(ctx, x + Math.sin(i * 0.05) * 6, yBase - i, 8, 9, '#8a5a3a');
+  for (let i = 0; i < h; i += 7) {
+    const tx0 = x + Math.sin(i * 0.05) * 6;
+    PR(ctx, tx0, yBase - i, 9, 8, '#8a5a3a');
+    PR(ctx, tx0, yBase - i, 3, 8, '#9c6a46');     // luz no tronco
+    PR(ctx, tx0 + 7, yBase - i, 2, 8, '#6b4630');  // sombra
   }
   const tx = x + Math.sin(h * 0.05) * 6 + 4;
   const ty = yBase - h;
-  [[-26, -8], [-16, -16], [0, -20], [16, -16], [26, -8]].forEach(([dx, dy]) => {
-    PR(ctx, tx + dx - 6, ty + dy, 18, 6, '#2f7d3f');
-    PR(ctx, tx + dx / 2 - 5, ty + dy / 2 - 2, 14, 5, '#3f9b52');
+  // copa densa: folhas pendentes com base escura e brilho central
+  [[-30, -4], [-22, -13], [-9, -20], [0, -23], [9, -20], [22, -13], [30, -4]].forEach(([dx, dy]) => {
+    PR(ctx, tx + dx - 7, ty + dy, 16, 6, '#2f7d3f');
+    PR(ctx, tx + dx - 4, ty + dy + 4, 10, 5, '#2a6e38');                 // queda da folha
+    PR(ctx, tx + Math.round(dx * 0.5) - 5, ty + Math.round(dy * 0.5) - 2, 12, 5, '#46a85c');
   });
-  PR(ctx, tx - 5, ty - 2, 6, 6, '#6b4a2f');
-  PR(ctx, tx + 1, ty + 1, 6, 6, '#6b4a2f');
+  PR(ctx, tx - 5, ty - 1, 5, 5, '#6b4a2f'); // cocos
+  PR(ctx, tx + 2, ty + 1, 5, 5, '#5a3f28');
 }
 
 function jangadaSil(ctx, x, y, s = 1, sil = null) {
@@ -278,11 +367,18 @@ function antena(ctx, x, y, s = 1, c = '#1a2f26') {
   PR(ctx, x - 1, y - 52 * s, 2, 8 * s, c);
 }
 
-function stars(ctx, n = 40, yMax = 300) {
+function stars(ctx, n = 40, yMax = 300, t = 0) {
   for (let i = 0; i < n; i++) {
     const x = (i * 89 + 23) % 360;
     const y = (i * 53 + 11) % yMax;
-    PR(ctx, x, y, 2, 2, i % 4 === 0 ? '#fff8d0' : '#9fb4d0');
+    const tw = Math.sin(t * 3 + i * 1.7); // cintilação
+    if (tw < -0.6) continue; // pisca: some por instantes
+    const big = i % 4 === 0;
+    PR(ctx, x, y, big ? 2 : 1, big ? 2 : 1, big ? '#fff8d0' : '#9fb4d0');
+    if (big && tw > 0.7) { // brilho em cruz nas mais fortes
+      PR(ctx, x - 1, y, 4, 1, 'rgba(255,248,208,0.5)');
+      PR(ctx, x + 0.5, y - 1, 1, 4, 'rgba(255,248,208,0.5)');
+    }
   }
 }
 
@@ -326,18 +422,43 @@ function alfaiaDrum(ctx, x, y, w, h) {
   }
 }
 
-function mangueRoots(ctx, yBase) {
-  for (let i = 0; i < 9; i++) {
-    const x = i * 42 + 10;
-    const h = 60 + (i * 29 % 40);
-    PR(ctx, x, yBase - h, 7, h, '#4a3320');
-    PR(ctx, x - 8, yBase - h * 0.5, 8, 4, '#4a3320');
-    PR(ctx, x - 12, yBase - h * 0.5 + 2, 6, h * 0.5, '#3a2818');
-    PR(ctx, x + 7, yBase - h * 0.6, 8, 4, '#4a3320');
-    PR(ctx, x + 13, yBase - h * 0.6 + 2, 6, h * 0.6, '#3a2818');
-    PR(ctx, x - 14, yBase - h - 10, 36, 16, '#2f5a35');
-    PR(ctx, x - 8, yBase - h - 20, 26, 14, '#3a7042');
+// perna de raiz: escada diagonal de (x0,y0) até (x1,y1)
+function rootLeg(ctx, x0, y0, x1, y1, c, th = 3) {
+  const steps = Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0)) || 1;
+  for (let i = 0; i <= steps; i += 2) {
+    const k = i / steps;
+    PR(ctx, x0 + (x1 - x0) * k - th / 2, y0 + (y1 - y0) * k, th, th + 1, c);
   }
+}
+// tufo de folha arredondado (cruz de 2 retângulos)
+function leafBlob(ctx, cx, cy, r, c) {
+  PR(ctx, cx - r, cy - r * 0.6, r * 2, r * 1.2, c);
+  PR(ctx, cx - r * 0.6, cy - r, r * 1.2, r * 2, c);
+}
+// árvore de mangue (rizófora): raízes-escora arqueadas + copa densa
+function mangueTree(ctx, x, yBase, h, p) {
+  const topY = yBase - h;
+  const rootY = yBase - h * 0.5;
+  [24, 15, 7].forEach((dx, i) => { // raízes splaiando até a lama
+    rootLeg(ctx, x, rootY + i * 4, x - dx, yBase, p.woodD, 3);
+    rootLeg(ctx, x, rootY + i * 4, x + dx, yBase, p.woodD, 3);
+  });
+  PR(ctx, x - 3, topY, 6, rootY - topY + 6, p.wood); // tronco
+  PR(ctx, x + 1, topY, 2, rootY - topY + 6, p.woodD);
+  leafBlob(ctx, x - 12, topY + 5, 11, p.leafD); // copa em camadas
+  leafBlob(ctx, x + 12, topY + 5, 11, p.leafD);
+  leafBlob(ctx, x, topY - 2, 16, p.leafD);
+  leafBlob(ctx, x - 9, topY + 1, 8, p.leaf);
+  leafBlob(ctx, x + 9, topY + 1, 8, p.leaf);
+  leafBlob(ctx, x, topY - 5, 11, p.leaf);
+  leafBlob(ctx, x - 3, topY - 7, 6, p.leafL); // brilho
+}
+
+function mangueRoots(ctx, yBase) {
+  const back = { wood: '#41513f', woodD: '#3a4836', leaf: '#46604a', leafD: '#3e5642', leafL: '#506a52' };
+  for (let i = 0; i < 5; i++) mangueTree(ctx, 36 + i * 76, yBase - 30, 38 + (i * 17 % 16), back);
+  const front = { wood: '#5a3f28', woodD: '#3a2818', leaf: '#3a7042', leafD: '#2f5a35', leafL: '#54a25e' };
+  for (let i = 0; i < 4; i++) mangueTree(ctx, 12 + i * 100, yBase, 66 + (i * 23 % 26), front);
 }
 
 // ---------- ícones (puzzles de memória e sombras) ----------
@@ -469,8 +590,12 @@ const SCENES = {
   1(ctx, t) { // Dias de Sol — Marco Zero
     skyBands(ctx, ['#7ec8e8', '#9fd8f0', '#bfe6f2', '#d8f0f8'], 0, 420);
     sun(ctx, 290, 80, 26, t);
-    cloud(ctx, 30 + Math.sin(t * 0.3) * 10, 60, 50);
-    cloud(ctx, 150, 110, 38, '#f0f8fc');
+    cloudLayer(ctx, t, [
+      { x: 20, y: 50, w: 58, sp: 4, c: '#ffffff' },
+      { x: 210, y: 88, w: 42, sp: 7, c: '#f0f8fc' },
+      { x: 120, y: 130, w: 30, sp: 11, c: '#eaf4fb' },
+    ]);
+    birds(ctx, t, 5, 150, 24, '#3a4a5f');
     casa(ctx, 420, 0);
     PR(ctx, 0, 420, 360, 220, '#d8c8a8'); // praça
     // rosa dos ventos do Marco Zero
@@ -481,15 +606,25 @@ const SCENES = {
   2(ctx, t) { // Praia de Boa Viagem
     skyBands(ctx, ['#7ec8e8', '#9fd8f0', '#bfe6f2'], 0, 280);
     sun(ctx, 60, 70, 22, t);
-    cloud(ctx, 220 + Math.sin(t * 0.4) * 14, 70, 56);
+    cloudLayer(ctx, t, [
+      { x: 180, y: 60, w: 56, sp: 5, c: '#ffffff' },
+      { x: 40, y: 120, w: 36, sp: 9, c: '#eaf4fb' },
+      { x: 280, y: 150, w: 28, sp: 13, c: '#eaf4fb' },
+    ]);
+    birds(ctx, t, 6, 170, 30, '#3a4a5f');
     sea(ctx, 280, 420, t);
+    seaGlow(ctx, 60, 282, 416, t);
     sand(ctx, 420, 640);
     coqueiro(ctx, 30, 470, 90);
     coqueiro(ctx, 320, 500, 70);
   },
   3(ctx, t) { // Águas do Tubarão
     skyBands(ctx, ['#9fd8f0', '#bfe6f2'], 0, 160);
-    cloud(ctx, 60, 50, 50);
+    cloudLayer(ctx, t, [
+      { x: 40, y: 40, w: 50, sp: 6, c: '#ffffff' },
+      { x: 230, y: 80, w: 34, sp: 10, c: '#eaf4fb' },
+    ]);
+    birds(ctx, t, 5, 90, 28, '#3a4a5f');
     sea(ctx, 160, 560, t, '#1d6fa3', '#123f66');
     sand(ctx, 560, 640);
     // bandeira vermelha de alerta
@@ -499,9 +634,11 @@ const SCENES = {
   },
   4(ctx, t) { // Dias de Chuva
     skyBands(ctx, ['#5a6b7a', '#6b7d8c', '#7d8f9e'], 0, 420);
-    cloud(ctx, 40, 50, 70, '#4a5a68');
-    cloud(ctx, 180, 80, 90, '#43525f');
-    cloud(ctx, 280, 40, 60, '#4a5a68');
+    cloudLayer(ctx, t, [
+      { x: 20, y: 36, w: 78, sp: 9, c: '#43525f' },
+      { x: 180, y: 70, w: 96, sp: 14, c: '#3a4651' },
+      { x: 300, y: 30, w: 60, sp: 20, c: '#4a5a68' },
+    ]);
     casa(ctx, 420, 2);
     PR(ctx, 0, 420, 360, 220, '#5a6b7a');
     PR(ctx, 40, 460, 80, 8, '#7d9fb4'); // poças
@@ -531,9 +668,9 @@ const SCENES = {
   },
   7(ctx, t) { // Noite de Maracatu
     skyBands(ctx, ['#0a1228', '#101a35', '#1a2545'], 0, 440);
-    stars(ctx, 50, 350);
-    PR(ctx, 290, 60, 30, 30, '#f0ead0'); // lua
-    PR(ctx, 296, 66, 8, 8, '#d8d0b0');
+    stars(ctx, 50, 350, t);
+    moon(ctx, 300, 74, 18);
+    casaFar(ctx, 412, 6, 'rgba(58,74,108,0.6)');
     casaSilhueta(ctx, 440);
     PR(ctx, 0, 440, 360, 200, '#1a1525');
     // tochas
@@ -554,7 +691,7 @@ const SCENES = {
   },
   9(ctx, t) { // Manguebeat — crepúsculo
     skyBands(ctx, ['#2a4a55', '#3a6a6a', '#5a8a78', '#8aa888'], 0, 420);
-    stars(ctx, 20, 160);
+    stars(ctx, 20, 160, t);
     casaSilhueta(ctx, 380, '#13242a');
     PR(ctx, 0, 380, 360, 260, '#2a2418'); // lama do mangue
     mangueRootsSil(ctx, 440);
@@ -566,7 +703,9 @@ const SCENES = {
   10(ctx, t) { // Jangadeiros ao Pôr do Sol
     skyBands(ctx, ['#3a2a55', '#8a3a5a', '#d95a4a', '#f2904a', '#f2c038'], 0, 380);
     sun(ctx, 180, 350, 30, t, '#fff0a0', '#ffd94a');
+    birds(ctx, t, 6, 110, 22, '#3a2238');
     sea(ctx, 380, 580, t, '#8a4a55', '#5a2a45', '#f2b080');
+    seaGlow(ctx, 180, 382, 576, t, 'rgba(255,224,150,0.45)');
     sand(ctx, 580, 640, '#c8a878', '#b09060');
     jangadaSil(ctx, 80, 470, 1, '#1a1020');
     jangadaSil(ctx, 280, 430, 0.7, '#1a1020');
@@ -586,12 +725,10 @@ function casaSilhueta(ctx, yBase, c = '#0d1525') {
   PR(ctx, 304, yBase - 162, 14, 24, c);
 }
 function mangueRootsSil(ctx, yBase) {
-  for (let i = 0; i < 9; i++) {
-    const x = i * 42 + 10;
-    const h = 50 + (i * 29 % 36);
-    PR(ctx, x, yBase - h, 6, h, '#13110a');
-    PR(ctx, x - 12, yBase - h - 8, 32, 14, '#1a2415');
-  }
+  const far = { wood: '#1d2817', woodD: '#1d2817', leaf: '#22301a', leafD: '#22301a', leafL: '#22301a' };
+  for (let i = 0; i < 5; i++) mangueTree(ctx, 30 + i * 78, yBase - 14, 40 + (i * 17 % 16), far);
+  const near = { wood: '#0e140a', woodD: '#0e140a', leaf: '#13110a', leafD: '#13110a', leafL: '#13110a' };
+  for (let i = 0; i < 4; i++) mangueTree(ctx, 6 + i * 104, yBase, 58 + (i * 23 % 24), near);
 }
 
 function drawScene(n, ctx, t) {

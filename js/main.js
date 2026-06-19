@@ -84,8 +84,11 @@
     if (!isNar) {
       const face = line.who === 'maju' ? MAJU_FACE : VOVO_FACE;
       const pal = line.who === 'maju' ? FACE_PAL : VOVO_FACE_PAL;
+      // piscar: a cada ~3.2s os olhos (k) viram pele por um instante
+      const blink = (t % 3.2) < 0.12;
+      const fpal = blink ? { ...pal, k: pal.f } : pal;
       PR(ctx, bx + 10, by + 12, 64, 64, '#0f1d30');
-      drawMap(ctx, face, pal, bx + 14, by + 16, 4.6);
+      drawMap(ctx, face, fpal, bx + 14, by + 16, 4.6);
       pTxt(ctx, line.who === 'maju' ? 'MAJU' : 'VOVÔ CHICO', bx + 42, by + 90, 11, '#f2c038');
       tx = bx + 88; tw = bw - 104;
     }
@@ -100,6 +103,20 @@
       pTxt(ctx, '▼ toque', bx + bw - 50, by + bh - 14, 11, '#f2c038');
     }
     pTxt(ctx, `${d.i + 1}/${d.lines.length}`, bx + 30, by + bh - 14, 10, '#5a6b7a');
+  }
+
+  // quem fala: balança mais e fica em destaque; o outro recua e escurece
+  function drawSpeaker(fn, x, y, active, t, phase) {
+    ctx.save();
+    const bob = active ? Math.sin(t * 3 + phase) * 2.5 : Math.sin(t * 1.4 + phase) * 1;
+    if (active) {
+      // leve halo de atenção
+      ctx.globalAlpha = 0.18;
+      PR(ctx, x + 8, y + 36, 44, 8, '#f2c038');
+    }
+    ctx.globalAlpha = active ? 1 : 0.5;
+    fn(ctx, x, y + bob, 5);
+    ctx.restore();
   }
 
   // ---------- HUD do puzzle ----------
@@ -401,8 +418,11 @@
       case 'dialogue':
         drawScene(S.sceneN, ctx, t);
         S.dlg.chars += dt * 42;
-        drawVovo(ctx, 250, H - 230, 5);
-        drawMaju(ctx, 70, H - 226, 5);
+        {
+          const who = S.dlg.lines[S.dlg.i].who;
+          drawSpeaker(drawVovo, 250, H - 230, who === 'vovo', t, 0);
+          drawSpeaker(drawMaju, 70, H - 226, who === 'maju', t, 1.2);
+        }
         drawDialogue(t);
         break;
       case 'chapters':
