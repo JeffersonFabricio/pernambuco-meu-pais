@@ -67,7 +67,7 @@ const STORY = {
       outro: [
         { who: 'nar',  text: 'O banhista pisa na areia, aliviado. O tubarão segue seu caminho, tranquilo.' },
         { who: 'maju', text: 'A Conta do Mar! Azul como as águas além dos arrecifes.' },
-        { who: 'vovo', text: 'Respeitar o mar é a primeira lição de quem nasce no Recife.' },
+        { who: 'vovo', text: 'Respeitar o mar é a primeira lição de quem nasce aqui.' },
       ],
     },
     4: {
@@ -75,7 +75,7 @@ const STORY = {
       beadName: 'Conta da Chuva', beadColor: '#7d9fb4',
       intro: [
         { who: 'nar',  text: 'O céu fechou. Chuva de inverno recifense: a cidade vira aquarela cinzenta.' },
-        { who: 'maju', text: 'A conta desceu pelas calhas do casa junto com a água da chuva!' },
+        { who: 'maju', text: 'A conta desceu pelas calhas da casa junto com a água da chuva!' },
         { who: 'vovo', text: 'Junho no Recife é assim: chove sem pedir licença. A cidade aprendeu a dançar na chuva.' },
         { who: 'maju', text: 'Vou girar os canos pra levar a água da calha até a cisterna. A conta vem junto!' },
       ],
