@@ -573,6 +573,19 @@ const ICONS = {
   bolo: iconBolo, renda: iconRenda, cordel: iconCordel, barro: iconBarro,
 };
 
+// medalhão de fase/capítulo: sombra projetada + corpo + bisel + brilho opcional
+function drawNode(ctx, x, y, r, base, face, glow = 0) {
+  PR(ctx, x - r + 3, y - r + 6, r * 2, r * 2, 'rgba(0,0,0,0.28)'); // sombra
+  if (glow > 0) {
+    const g = 0.18 + glow * 0.22;
+    PR(ctx, x - r - 4, y - r - 4, r * 2 + 8, r * 2 + 8, `rgba(255,240,160,${g})`);
+  }
+  PR(ctx, x - r, y - r, r * 2, r * 2, base);                              // borda
+  PR(ctx, x - r + 4, y - r + 4, r * 2 - 8, r * 2 - 8, face);             // face
+  PR(ctx, x - r + 4, y - r + 4, r * 2 - 8, 5, 'rgba(255,255,255,0.35)'); // luz no topo
+  PR(ctx, x - r + 4, y + r - 9, r * 2 - 8, 5, 'rgba(0,0,0,0.18)');       // sombra na base
+}
+
 // conta do colar
 function drawBead(ctx, x, y, r, color, filled = true) {
   if (filled) {
@@ -587,130 +600,215 @@ function drawBead(ctx, x, y, r, color, filled = true) {
   }
 }
 
-// ---------- cenários por fase ----------
-const SCENES = {
-  1(ctx, t) { // Dias de Sol — Marco Zero
-    skyBands(ctx, ['#7ec8e8', '#9fd8f0', '#bfe6f2', '#d8f0f8'], 0, 420);
-    sun(ctx, 290, 80, 26, t);
-    cloudLayer(ctx, t, [
-      { x: 20, y: 50, w: 58, sp: 4, c: '#ffffff' },
-      { x: 210, y: 88, w: 42, sp: 7, c: '#f0f8fc' },
-      { x: 120, y: 130, w: 30, sp: 11, c: '#eaf4fb' },
-    ]);
-    birds(ctx, t, 5, 150, 24, '#3a4a5f');
-    casa(ctx, 420, 0);
-    PR(ctx, 0, 420, 360, 220, '#d8c8a8'); // praça
-    // rosa dos ventos do Marco Zero
-    PR(ctx, 150, 480, 60, 60, '#c8b490');
-    PR(ctx, 176, 470, 8, 80, '#8a6a4a');
-    PR(ctx, 140, 506, 80, 8, '#8a6a4a');
-  },
-  2(ctx, t) { // Praia de Boa Viagem
-    skyBands(ctx, ['#7ec8e8', '#9fd8f0', '#bfe6f2'], 0, 280);
-    sun(ctx, 60, 70, 22, t);
-    cloudLayer(ctx, t, [
-      { x: 180, y: 60, w: 56, sp: 5, c: '#ffffff' },
-      { x: 40, y: 120, w: 36, sp: 9, c: '#eaf4fb' },
-      { x: 280, y: 150, w: 28, sp: 13, c: '#eaf4fb' },
-    ]);
-    birds(ctx, t, 6, 170, 30, '#3a4a5f');
-    sea(ctx, 280, 420, t);
-    seaGlow(ctx, 60, 282, 416, t);
-    sand(ctx, 420, 640);
-    coqueiro(ctx, 30, 470, 90);
-    coqueiro(ctx, 320, 500, 70);
-  },
-  3(ctx, t) { // Águas do Tubarão
-    skyBands(ctx, ['#9fd8f0', '#bfe6f2'], 0, 160);
-    cloudLayer(ctx, t, [
-      { x: 40, y: 40, w: 50, sp: 6, c: '#ffffff' },
-      { x: 230, y: 80, w: 34, sp: 10, c: '#eaf4fb' },
-    ]);
-    birds(ctx, t, 5, 90, 28, '#3a4a5f');
-    sea(ctx, 160, 560, t, '#1d6fa3', '#123f66');
-    sand(ctx, 560, 640);
-    // bandeira vermelha de alerta
-    PR(ctx, 30, 480, 4, 90, '#5a3a22');
-    PR(ctx, 34, 480, 36, 24, '#d92f2f');
-    drawShark(ctx, 200 + Math.sin(t * 0.7) * 60, 240, 3, Math.cos(t * 0.7) < 0);
-  },
-  4(ctx, t) { // Dias de Chuva
-    skyBands(ctx, ['#5a6b7a', '#6b7d8c', '#7d8f9e'], 0, 420);
-    cloudLayer(ctx, t, [
-      { x: 20, y: 36, w: 78, sp: 9, c: '#43525f' },
-      { x: 180, y: 70, w: 96, sp: 14, c: '#3a4651' },
-      { x: 300, y: 30, w: 60, sp: 20, c: '#4a5a68' },
-    ]);
-    casa(ctx, 420, 2);
-    PR(ctx, 0, 420, 360, 220, '#5a6b7a');
-    PR(ctx, 40, 460, 80, 8, '#7d9fb4'); // poças
-    PR(ctx, 220, 520, 100, 8, '#7d9fb4');
-    rainFx(ctx, t);
-  },
-  5(ctx, t) { // Mangue
-    skyBands(ctx, ['#8fb8a8', '#a8c8b8'], 0, 240);
-    PR(ctx, 0, 240, 360, 200, '#3a5a45');
-    mangueRoots(ctx, 440);
-    PR(ctx, 0, 440, 360, 200, '#4a3a28'); // lama
-    for (let i = 0; i < 14; i++) {
-      const x = (i * 61) % 360;
-      const y = 460 + (i * 43) % 160;
-      PR(ctx, x, y, 6, 3, '#3a2d1e');
+// ---------- céu e mar (gradientes com dithering ordenado) ----------
+// matriz de Bayer 4x4: transição suave entre cores mantendo o look de pixel
+const BAYER4 = [
+  [0, 8, 2, 10], [12, 4, 14, 6], [3, 11, 1, 9], [15, 7, 13, 5],
+];
+// gradiente vertical dithered entre uma lista de cores (faixas suaves)
+function skyGrad(ctx, stops, y0, y1, cell = 4) {
+  const H = y1 - y0, segs = stops.length - 1;
+  if (segs <= 0) { PR(ctx, 0, y0, 360, H, stops[0]); return; }
+  for (let yy = 0; yy < H; yy += cell) {
+    const k = (yy / H) * segs;
+    const i = Math.min(segs - 1, Math.floor(k));
+    const f = k - i;
+    const ca = stops[i], cb = stops[i + 1];
+    const brow = BAYER4[(yy / cell) & 3];
+    for (let xx = 0; xx < 360; xx += cell) {
+      const th = (brow[(xx / cell) & 3] + 0.5) / 16;
+      PR(ctx, xx, y0 + yy, cell, cell, f > th ? cb : ca);
     }
-    // bolhas na lama
-    const bx = (t * 20) % 360;
-    PR(ctx, bx, 500 + Math.sin(t * 3) * 4, 4, 4, '#6a5a42');
+  }
+}
+// base do mar: degradê de profundidade (estático)
+function seaBase(ctx, y0, y1, base = '#1d6fa3', deep = '#15578a') {
+  skyGrad(ctx, [base, base, deep], y0, y1, 4);
+}
+// espuma do mar em movimento (dinâmico)
+function seaWaves(ctx, y0, y1, t, foam = '#bfe6f2') {
+  for (let r = 0; r < 6; r++) {
+    const y = y0 + 8 + r * ((y1 - y0 - 16) / 6);
+    for (let k = 0; k < 5; k++) {
+      const x = ((k * 90 + Math.sin(t * 1.2 + r * 1.7 + k) * 22) % 400) - 20;
+      PR(ctx, x, y, 26, 3, foam);
+    }
+  }
+}
+
+// ---------- cenários por fase ----------
+// Cada cena = { s(ctx): camada estática (céu, prédios, chão) | d(ctx,t): camada animada }
+// A estática é renderizada uma vez num canvas offscreen e reaproveitada todo frame.
+const SCENES = {
+  1: {
+    s(ctx) { // Dias de Sol — Marco Zero
+      skyGrad(ctx, ['#5ab4e0', '#7ec8e8', '#9fd8f0', '#bfe6f2', '#d8f0f8'], 0, 420);
+      casa(ctx, 420, 0);
+      PR(ctx, 0, 420, 360, 220, '#d8c8a8'); // praça
+      PR(ctx, 0, 420, 360, 4, 'rgba(255,255,255,0.18)');
+      PR(ctx, 150, 480, 60, 60, '#c8b490'); // rosa dos ventos
+      PR(ctx, 176, 470, 8, 80, '#8a6a4a');
+      PR(ctx, 140, 506, 80, 8, '#8a6a4a');
+    },
+    d(ctx, t) {
+      sun(ctx, 290, 80, 26, t);
+      cloudLayer(ctx, t, [
+        { x: 20, y: 50, w: 58, sp: 4, c: '#ffffff' },
+        { x: 210, y: 88, w: 42, sp: 7, c: '#f0f8fc' },
+        { x: 120, y: 130, w: 30, sp: 11, c: '#eaf4fb' },
+      ]);
+      birds(ctx, t, 5, 150, 24, '#3a4a5f');
+    },
   },
-  6(ctx, t) { // Cultura Viva — mercado
-    skyBands(ctx, ['#e8b96a', '#e8a05a'], 0, 300);
-    casa(ctx, 380, 4);
-    PR(ctx, 0, 380, 360, 260, '#b08a5a');
-    bandeirinhas(ctx, 40, t);
-    bandeirinhas(ctx, 80, t + 2);
+  2: {
+    s(ctx) { // Praia de Boa Viagem
+      skyGrad(ctx, ['#5ab4e0', '#7ec8e8', '#9fd8f0', '#bfe6f2'], 0, 280);
+      seaBase(ctx, 280, 420, '#1d6fa3', '#15578a');
+      sand(ctx, 420, 640);
+      coqueiro(ctx, 30, 470, 90);
+      coqueiro(ctx, 320, 500, 70);
+    },
+    d(ctx, t) {
+      sun(ctx, 60, 70, 22, t);
+      cloudLayer(ctx, t, [
+        { x: 180, y: 60, w: 56, sp: 5, c: '#ffffff' },
+        { x: 40, y: 120, w: 36, sp: 9, c: '#eaf4fb' },
+        { x: 280, y: 150, w: 28, sp: 13, c: '#eaf4fb' },
+      ]);
+      birds(ctx, t, 6, 170, 30, '#3a4a5f');
+      seaWaves(ctx, 280, 420, t);
+      seaGlow(ctx, 60, 282, 416, t);
+    },
   },
-  7(ctx, t) { // Noite de Maracatu
-    skyBands(ctx, ['#0a1228', '#101a35', '#1a2545'], 0, 440);
-    stars(ctx, 50, 350, t);
-    moon(ctx, 300, 74, 18);
-    casaFar(ctx, 412, 6, 'rgba(58,74,108,0.6)');
-    casaSilhueta(ctx, 440);
-    PR(ctx, 0, 440, 360, 200, '#1a1525');
-    // tochas
-    [40, 320].forEach(x => {
-      PR(ctx, x, 380, 6, 60, '#4a3320');
-      const f = Math.sin(t * 8 + x) * 3;
-      PR(ctx, x - 3, 364 + f, 12, 16, '#e8762a');
-      PR(ctx, x - 1, 360 + f, 8, 10, '#f2c038');
-    });
+  3: {
+    s(ctx) { // Águas do Tubarão
+      skyGrad(ctx, ['#7ec8e8', '#9fd8f0', '#bfe6f2'], 0, 160);
+      seaBase(ctx, 160, 560, '#1d6fa3', '#123f66');
+      sand(ctx, 560, 640);
+      PR(ctx, 30, 480, 4, 90, '#5a3a22'); // bandeira de alerta
+      PR(ctx, 34, 480, 36, 24, '#d92f2f');
+    },
+    d(ctx, t) {
+      cloudLayer(ctx, t, [
+        { x: 40, y: 40, w: 50, sp: 6, c: '#ffffff' },
+        { x: 230, y: 80, w: 34, sp: 10, c: '#eaf4fb' },
+      ]);
+      birds(ctx, t, 5, 90, 28, '#3a4a5f');
+      seaWaves(ctx, 160, 560, t);
+      drawShark(ctx, 200 + Math.sin(t * 0.7) * 60, 240, 3, Math.cos(t * 0.7) < 0);
+    },
   },
-  8(ctx, t) { // Frevo no Ar
-    skyBands(ctx, ['#7ec8e8', '#9fd8f0', '#bfe6f2'], 0, 400);
-    sun(ctx, 310, 60, 20, t);
-    casa(ctx, 400, 1);
-    PR(ctx, 0, 400, 360, 240, '#c8b490');
-    bandeirinhas(ctx, 100, t);
-    confete(ctx, t);
+  4: {
+    s(ctx) { // Dias de Chuva
+      skyGrad(ctx, ['#4a5b6a', '#5a6b7a', '#6b7d8c', '#7d8f9e'], 0, 420);
+      casa(ctx, 420, 2);
+      PR(ctx, 0, 420, 360, 220, '#5a6b7a');
+      PR(ctx, 40, 460, 80, 8, '#7d9fb4'); // poças
+      PR(ctx, 220, 520, 100, 8, '#7d9fb4');
+    },
+    d(ctx, t) {
+      cloudLayer(ctx, t, [
+        { x: 20, y: 36, w: 78, sp: 9, c: '#43525f' },
+        { x: 180, y: 70, w: 96, sp: 14, c: '#3a4651' },
+        { x: 300, y: 30, w: 60, sp: 20, c: '#4a5a68' },
+      ]);
+      // reflexo trêmulo nas poças
+      PR(ctx, 40, 460, 80, 2, `rgba(200,224,240,${0.2 + Math.sin(t * 4) * 0.1})`);
+      rainFx(ctx, t);
+    },
   },
-  9(ctx, t) { // Manguebeat — crepúsculo
-    skyBands(ctx, ['#2a4a55', '#3a6a6a', '#5a8a78', '#8aa888'], 0, 420);
-    stars(ctx, 20, 160, t);
-    casaSilhueta(ctx, 380, '#13242a');
-    PR(ctx, 0, 380, 360, 260, '#2a2418'); // lama do mangue
-    mangueRootsSil(ctx, 440);
-    antena(ctx, 80, 560, 1.4);
-    antena(ctx, 290, 580, 1);
-    const bx = (t * 14) % 360;
-    PR(ctx, bx, 530, 4, 4, '#5a5242');
+  5: {
+    s(ctx) { // Mangue
+      skyGrad(ctx, ['#7fae9e', '#8fb8a8', '#a8c8b8'], 0, 240);
+      seaBase(ctx, 240, 440, '#3a5a45', '#2f4a39');
+      mangueRoots(ctx, 440);
+      PR(ctx, 0, 440, 360, 200, '#4a3a28'); // lama
+      PR(ctx, 0, 440, 360, 3, 'rgba(120,150,120,0.2)');
+      for (let i = 0; i < 14; i++) {
+        const x = (i * 61) % 360;
+        const y = 460 + (i * 43) % 160;
+        PR(ctx, x, y, 6, 3, '#3a2d1e');
+      }
+    },
+    d(ctx, t) {
+      const bx = (t * 20) % 360;
+      PR(ctx, bx, 500 + Math.sin(t * 3) * 4, 4, 4, '#6a5a42');
+      PR(ctx, (bx + 180) % 360, 540 + Math.sin(t * 2.3) * 4, 3, 3, '#6a5a42');
+    },
   },
-  10(ctx, t) { // Jangadeiros ao Pôr do Sol
-    skyBands(ctx, ['#3a2a55', '#8a3a5a', '#d95a4a', '#f2904a', '#f2c038'], 0, 380);
-    sun(ctx, 180, 350, 30, t, '#fff0a0', '#ffd94a');
-    birds(ctx, t, 6, 110, 22, '#3a2238');
-    sea(ctx, 380, 580, t, '#8a4a55', '#5a2a45', '#f2b080');
-    seaGlow(ctx, 180, 382, 576, t, 'rgba(255,224,150,0.45)');
-    sand(ctx, 580, 640, '#c8a878', '#b09060');
-    jangadaSil(ctx, 80, 470, 1, '#1a1020');
-    jangadaSil(ctx, 280, 430, 0.7, '#1a1020');
+  6: {
+    s(ctx) { // Cultura Viva — mercado
+      skyGrad(ctx, ['#e8c47a', '#e8b96a', '#e8a05a'], 0, 300);
+      casa(ctx, 380, 4);
+      PR(ctx, 0, 380, 360, 260, '#b08a5a');
+      PR(ctx, 0, 380, 360, 3, 'rgba(255,240,200,0.18)');
+    },
+    d(ctx, t) {
+      bandeirinhas(ctx, 40, t);
+      bandeirinhas(ctx, 80, t + 2);
+    },
+  },
+  7: {
+    s(ctx) { // Noite de Maracatu
+      skyGrad(ctx, ['#070d1e', '#0a1228', '#101a35', '#1a2545'], 0, 440);
+      moon(ctx, 300, 74, 18);
+      casaFar(ctx, 412, 6, 'rgba(58,74,108,0.6)');
+      casaSilhueta(ctx, 440);
+      PR(ctx, 0, 440, 360, 200, '#1a1525');
+    },
+    d(ctx, t) {
+      stars(ctx, 50, 350, t);
+      [40, 320].forEach(x => {
+        PR(ctx, x, 380, 6, 60, '#4a3320');
+        const f = Math.sin(t * 8 + x) * 3;
+        PR(ctx, x - 4, 366 + f, 14, 4, 'rgba(242,150,60,0.25)'); // halo
+        PR(ctx, x - 3, 364 + f, 12, 16, '#e8762a');
+        PR(ctx, x - 1, 360 + f, 8, 10, '#f2c038');
+      });
+    },
+  },
+  8: {
+    s(ctx) { // Frevo no Ar
+      skyGrad(ctx, ['#5ab4e0', '#7ec8e8', '#9fd8f0', '#bfe6f2'], 0, 400);
+      casa(ctx, 400, 1);
+      PR(ctx, 0, 400, 360, 240, '#c8b490');
+      PR(ctx, 0, 400, 360, 4, 'rgba(255,255,255,0.18)');
+    },
+    d(ctx, t) {
+      sun(ctx, 310, 60, 20, t);
+      bandeirinhas(ctx, 100, t);
+      confete(ctx, t);
+    },
+  },
+  9: {
+    s(ctx) { // Manguebeat — crepúsculo
+      skyGrad(ctx, ['#1f3a44', '#2a4a55', '#3a6a6a', '#5a8a78', '#8aa888'], 0, 420);
+      casaSilhueta(ctx, 380, '#13242a');
+      PR(ctx, 0, 380, 360, 260, '#2a2418'); // lama
+      mangueRootsSil(ctx, 440);
+      antena(ctx, 80, 560, 1.4);
+      antena(ctx, 290, 580, 1);
+    },
+    d(ctx, t) {
+      stars(ctx, 20, 160, t);
+      const bx = (t * 14) % 360;
+      PR(ctx, bx, 530, 4, 4, '#5a5242');
+    },
+  },
+  10: {
+    s(ctx) { // Jangadeiros ao Pôr do Sol
+      skyGrad(ctx, ['#2a1f4a', '#3a2a55', '#8a3a5a', '#d95a4a', '#f2904a', '#f2c038'], 0, 380);
+      seaBase(ctx, 380, 580, '#8a4a55', '#5a2a45');
+      sand(ctx, 580, 640, '#c8a878', '#b09060');
+      jangadaSil(ctx, 80, 470, 1, '#1a1020');
+      jangadaSil(ctx, 280, 430, 0.7, '#1a1020');
+    },
+    d(ctx, t) {
+      sun(ctx, 180, 350, 30, t, '#fff0a0', '#ffd94a');
+      birds(ctx, t, 6, 110, 22, '#3a2238');
+      seaWaves(ctx, 380, 580, t, '#f2b080');
+      seaGlow(ctx, 180, 382, 576, t, 'rgba(255,224,150,0.45)');
+    },
   },
 };
 
@@ -733,6 +831,17 @@ function mangueRootsSil(ctx, yBase) {
   for (let i = 0; i < 4; i++) mangueTree(ctx, 6 + i * 104, yBase, 58 + (i * 23 % 24), near);
 }
 
+// cache de camadas estáticas das cenas (renderizadas uma vez por cena)
+const _sceneCache = {};
 function drawScene(n, ctx, t) {
-  (SCENES[n] || SCENES[1])(ctx, t);
+  const sc = SCENES[n] || SCENES[1];
+  let cv = _sceneCache[n];
+  if (!cv) {
+    cv = document.createElement('canvas');
+    cv.width = 360; cv.height = 640;
+    sc.s(cv.getContext('2d'));
+    _sceneCache[n] = cv;
+  }
+  ctx.drawImage(cv, 0, 0);
+  sc.d(ctx, t);
 }

@@ -24,6 +24,12 @@ function panel(ctx, x, y, w, h, fill = 'rgba(10,20,38,0.82)', stroke = '#f2c038'
 function inBox(px, py, x, y, w, h) { return px >= x && px < x + w && py >= y && py < y + h; }
 function rnd(n) { return Math.floor(Math.random() * n); }
 function shuffle(a) { return a.sort(() => Math.random() - 0.5); }
+// suavização exponencial (independente de framerate, com dt limitado): tween de movimento
+function approach(cur, target, dt, speed = 16) {
+  const d = target - cur;
+  if (Math.abs(d) < 0.002) return target;
+  return cur + d * Math.min(1, dt * speed);
+}
 
 const ICON_NAMES = {
   concha: 'concha', estrela: 'estrela', siri: 'siri', coco: 'coco', peixe: 'peixe',
@@ -180,11 +186,13 @@ class SharkPuzzle {
     this.y0 = PA.y + 30;
     this.fast = !!cfg.fast;
     this.p = { r: 0, c: 3 };
+    this.pd = { r: 0, c: 3 }; // posição animada do banhista
     const nS = Math.min(cfg.sharks || 3, 5);
     const rows = shuffle([1, 2, 3, 4, 5, 6]).slice(0, nS);
     this.sharks = rows.map(r => ({ r, c: rnd(this.cols), d: Math.random() < 0.5 ? 1 : -1 }));
     // nenhum tubarão começa colado no banhista
     this.sharks.forEach(s => { if (s.r <= 1 && Math.abs(s.c - 3) < 2) s.c = (s.c + 3) % this.cols; });
+    this.sharks.forEach(s => { s.cd = s.c; }); // coluna animada de cada tubarão
     this.solved = false;
     this.flash = 0;
   }
@@ -213,11 +221,17 @@ class SharkPuzzle {
       AudioFX.splash();
       this.flash = 0.6;
       this.p = { r: 0, c: 3 };
+      this.pd = { r: 0, c: 3 }; // volta ao início sem deslizar pela tela toda
       return;
     }
     if (this.p.r === this.rows - 1) { this.solved = true; AudioFX.win(); }
   }
-  update(dt) { if (this.flash > 0) this.flash -= dt; }
+  update(dt) {
+    if (this.flash > 0) this.flash -= dt;
+    this.pd.r = approach(this.pd.r, this.p.r, dt, 20);
+    this.pd.c = approach(this.pd.c, this.p.c, dt, 20);
+    for (const s of this.sharks) s.cd = approach(s.cd, s.c, dt, 14);
+  }
   draw(ctx, t) {
     for (let r = 0; r < this.rows; r++) {
       for (let c = 0; c < this.cols; c++) {
@@ -231,13 +245,14 @@ class SharkPuzzle {
       }
     }
     for (const s of this.sharks) {
-      const x = this.x0 + s.c * this.cs, y = this.y0 + s.r * this.cs;
-      drawShark(ctx, x + 4, y + 8, 2, s.d < 0);
+      const x = this.x0 + s.cd * this.cs, y = this.y0 + s.r * this.cs;
+      const wob = Math.sin(t * 3 + s.r) * 1.5; // nado ondulante
+      drawShark(ctx, x + 4, y + 8 + wob, 2, s.d < 0);
       const sym = s.d > 0 ? (this.fast ? '»' : '›') : (this.fast ? '«' : '‹');
       const ax = s.d > 0 ? x + this.cs - 2 : x - 4;
       pTxt(ctx, sym, ax + 2, y + this.cs / 2, 15, '#fff8d0');
     }
-    const px = this.x0 + this.p.c * this.cs, py = this.y0 + this.p.r * this.cs;
+    const px = this.x0 + this.pd.c * this.cs, py = this.y0 + this.pd.r * this.cs;
     const bob = Math.sin(t * 4) * 2;
     PR(ctx, px + 14, py + 8 + bob, 12, 12, '#a9683f');
     PR(ctx, px + 16, py + 11 + bob, 3, 3, '#1c0f08');
@@ -387,6 +402,8 @@ class MazePuzzle {
     this.x0 = PA.x + (PA.w - cols * this.cs) / 2;
     this.y0 = PA.y + 10;
     this.p = { r: 1, c: 1 };
+    this.disp = { r: 1, c: 1 }; // posição animada (tween)
+    this.pop = 0;              // mini "salto" ao pegar folha
     this.leaves = 0;
     this.solved = false;
   }
@@ -400,6 +417,7 @@ class MazePuzzle {
     if (cell === 'L') {
       this.map[nr][nc] = '.';
       this.leaves++;
+      this.pop = 0.3;
       AudioFX.ok();
     }
     if (cell === 'E' && this.leaves >= this.totalLeaves) {
@@ -423,7 +441,11 @@ class MazePuzzle {
     if (Math.abs(dx) > Math.abs(dy)) this.move(0, dx > 0 ? 1 : -1);
     else this.move(dy > 0 ? 1 : -1, 0);
   }
-  update() {}
+  update(dt) {
+    this.disp.r = approach(this.disp.r, this.p.r, dt, 18);
+    this.disp.c = approach(this.disp.c, this.p.c, dt, 18);
+    if (this.pop > 0) this.pop -= dt;
+  }
   draw(ctx, t) {
     for (let r = 0; r < this.rows; r++) {
       for (let c = 0; c < this.cols; c++) {
@@ -449,8 +471,11 @@ class MazePuzzle {
         }
       }
     }
-    const px = this.x0 + this.p.c * this.cs, py = this.y0 + this.p.r * this.cs;
-    drawCrab(ctx, px + 1, py + this.cs * 0.15, this.cs / 14);
+    const px = this.x0 + this.disp.c * this.cs, py = this.y0 + this.disp.r * this.cs;
+    const hop = this.pop > 0 ? -Math.sin(this.pop / 0.3 * Math.PI) * this.cs * 0.18 : 0;
+    // sombrinha de sombra sob o uçá (dá apoio ao chão)
+    PR(ctx, px + this.cs * 0.25, py + this.cs * 0.78, this.cs * 0.5, this.cs * 0.12, 'rgba(0,0,0,0.22)');
+    drawCrab(ctx, px + 1, py + this.cs * 0.15 + hop, this.cs / 14);
     pTxt(ctx, `Folhas: ${this.leaves}/${this.totalLeaves}`, 180, this.y0 + this.rows * this.cs + 16, 13, '#bfe6a0');
   }
 }
@@ -861,6 +886,7 @@ class RoutePuzzle {
     this.y0 = PA.y + 4;
     this.start = { r: n - 1, c: 0 };
     this.boat = { ...this.start };
+    this.bd = { ...this.start }; // posição animada da jangada (glide)
     this.prog = [];
     this.running = false;
     this.runIdx = 0;
@@ -941,12 +967,14 @@ class RoutePuzzle {
         if (b.id === 'clr') {
           this.prog = [];
           this.boat = { ...this.start };
+          this.bd = { ...this.start };
           AudioFX.tap();
         } else if (b.id === 'go' && this.prog.length) {
           this.running = true;
           this.runIdx = 0;
           this.runT = 0.2;
           this.boat = { ...this.start };
+          this.bd = { ...this.start };
           AudioFX.ok();
         }
         return;
@@ -955,6 +983,9 @@ class RoutePuzzle {
   }
   update(dt) {
     if (this.crashFlash > 0) this.crashFlash -= dt;
+    // glide contínuo da jangada rumo à célula lógica
+    this.bd.r = approach(this.bd.r, this.boat.r, dt, 11);
+    this.bd.c = approach(this.bd.c, this.boat.c, dt, 11);
     if (!this.running) return;
     this.runT -= dt;
     if (this.runT > 0) return;
@@ -967,6 +998,7 @@ class RoutePuzzle {
         this.crashFlash = 0.9;
         this.crashMsg = 'A rota acabou longe da boia...';
         this.boat = { ...this.start };
+        this.bd = { ...this.start };
         this.prog = [];
       }
       return;
@@ -981,6 +1013,7 @@ class RoutePuzzle {
       this.crashFlash = 0.9;
       this.crashMsg = (nr < 0 || nr >= n || nc < 0 || nc >= n) ? 'Saiu do canal! De novo...' : 'Bateu no arrecife! De novo...';
       this.boat = { ...this.start };
+      this.bd = { ...this.start };
       this.prog = [];
       return;
     }
@@ -1012,8 +1045,9 @@ class RoutePuzzle {
         }
       }
     }
-    const bx = this.x0 + this.boat.c * this.cs, by = this.y0 + this.boat.r * this.cs;
-    jangadaSil(ctx, bx + this.cs / 2, by + this.cs - 12, this.cs / 84);
+    const bx = this.x0 + this.bd.c * this.cs, by = this.y0 + this.bd.r * this.cs;
+    const wake = this.running ? Math.sin(t * 8) * 1.5 : 0; // balanço ao navegar
+    jangadaSil(ctx, bx + this.cs / 2, by + this.cs - 12 + wake, this.cs / 84);
     const py = PA.y + 284;
     pTxt(ctx, 'Rota:', PA.x + 8, py - 6, 12, '#f2c038', 'left');
     const sw = Math.floor((PA.w - 56) / this.maxProg);
