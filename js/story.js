@@ -198,27 +198,48 @@ const PUZZLE_HINTS = {
 // who: maju | vovo | jona | mica | jeff | vova | nar
 // ============================================================
 STORY.meet = {
-  // Tutorial: Jonatha e Micaele apresentam o mundo (Recife Antigo)
+  // Tutorial: Jonatha (pai) e Micaele (mãe) se despedem da filha (Recife Antigo)
   start: [
-    { who: 'jona', text: 'Ô Maju! Bem-vinda ao Recife Antigo! Eu sou o Jonatha.' },
-    { who: 'mica', text: 'E eu sou a Micaele! A gente vai te ensinar a andar por aqui.' },
-    { who: 'jona', text: 'Usa o direcional no canto da tela pra caminhar pela cidade. Vai, experimenta!' },
-    { who: 'maju', text: 'Assim? Ô, que massa! Dá pra ir pra qualquer canto!' },
-    { who: 'mica', text: 'As contas do colar do teu vovô se espalharam — são as plaquinhas com "?".' },
-    { who: 'jona', text: 'Chega pertinho de uma e toca em ENTRAR pra resolver o desafio dela.' },
-    { who: 'mica', text: 'Cada bairro tem nove contas. Junte as nove e a ponte pro próximo bairro se abre!' },
-    { who: 'jona', text: 'E olha: pelo caminho você vai encontrar gente da família pra te ajudar.' },
-    { who: 'mica', text: 'Na praia tem teu titio. Lá no frevo, tua vovó. E o vovô te espera no cais.' },
-    { who: 'maju', text: 'Então bora! Antes do pôr do sol esse colar tá inteirinho de novo!' },
-    { who: 'nar', text: 'Jonatha e Micaele acenam. O Recife inteiro se abre diante de Maju.' },
+    { who: 'jona', text: 'Maju! Vem cá, minha filha. Eu e tua mãe a gente tava te esperando.' },
+    { who: 'mica', text: 'Ô coisa linda da mainha... cada dia mais a cara do teu pai. Vem cá, deixa eu te abraçar.' },
+    { who: 'maju', text: 'Painho! Mainha! O vovô perdeu as contas do colar das marés... eu prometi que ia achar todas antes do pôr do sol!' },
+    { who: 'jona', text: 'A gente sabe, filha. E sabe que tu dá conta de tudo. Mas a cidade é grande — deixa o painho te ensinar primeiro.' },
+    { who: 'jona', text: 'Usa o direcional no canto da tela pra caminhar. Vai, experimenta, que eu tô bem aqui de olho em ti.' },
+    { who: 'maju', text: 'Assim, painho? Ô, que massa! Dá pra ir pra qualquer canto!' },
+    { who: 'mica', text: 'Isso, meu amor. As contas do colar do vovô se espalharam — são aquelas plaquinhas com "?".' },
+    { who: 'mica', text: 'Chega pertinho de uma e toca em ENTRAR. Confia em ti, que a gente confia.' },
+    { who: 'jona', text: 'Cada bairro tem nove contas. Junta as nove e a ponte pro próximo bairro se abre, viu, filha?' },
+    { who: 'mica', text: 'E tu não vai sozinha não. A família toda tá espalhada pela cidade só pra te ver passar.' },
+    { who: 'jona', text: 'Teu titio te espera na praia, tua vó no frevo... e o vovô, lá no cais, contando os minutos.' },
+    { who: 'maju', text: 'Então bora! Esse colar volta inteirinho — por vocês e pelo vovô. Eu prometo!' },
+    { who: 'mica', text: 'Vai com Deus, minha filha. A mainha fica com o coração apertado e cheio de orgulho.' },
+    { who: 'nar', text: 'Jonatha e Micaele acenam, lado a lado, até Maju virar a esquina. O Recife inteiro se abre diante dela.' },
+  ],
+  // Primeira conversa a sós com o pai (rede de segurança / saves antigos)
+  jona: [
+    { who: 'jona', text: 'Tudo bem por aí, minha filha? O painho fica aqui no Recife Antigo, pode ir tranquila.' },
+    { who: 'maju', text: 'Tô bem, painho! Só passei pra te ver um cadinho.' },
+    { who: 'jona', text: 'Vem cá então. Sabe o que mais me enche de orgulho? Não são as contas, não. É a coragem que tu tem.' },
+    { who: 'maju', text: 'Aprendi com o senhor, painho.' },
+    { who: 'jona', text: 'Aprendeu nada, já nasceu valente. Vai, que o painho tá com o coração contigo a cada passo.' },
   ],
   jonaAgain: [
-    { who: 'jona', text: 'Tá indo bem, Maju! Completa as nove contas do bairro pra abrir a ponte.' },
-    { who: 'maju', text: 'Pode deixar, Jonatha!' },
+    { who: 'jona', text: 'Tá indo lindo, filha. Completa as nove contas do bairro que a ponte se abre pra ti.' },
+    { who: 'maju', text: 'Pode deixar, painho! Faço por você e pela mainha.' },
+    { who: 'jona', text: 'Esse é o jeito da minha menina. Vai com cuidado — e volta logo pro abraço do painho.' },
+  ],
+  // Primeira conversa a sós com a mãe (rede de segurança / saves antigos)
+  mica: [
+    { who: 'mica', text: 'Minha menina... deixa a mainha te olhar direito. Tá te cuidando nessa correria toda?' },
+    { who: 'maju', text: 'Tô sim, mainha! Tô só atrás das contas do vovô.' },
+    { who: 'mica', text: 'Eu sei, meu amor. Olha o minimapa ali em cima: as contas douradas são as que tu já pegou.' },
+    { who: 'maju', text: 'Boa, mainha! Já tô achando o caminho.' },
+    { who: 'mica', text: 'Tô vendo, filha. Vai com fé — a mainha fica aqui rezando baixinho por ti.' },
   ],
   micaAgain: [
-    { who: 'mica', text: 'Ó o minimapa lá em cima: as contas douradas são as que você já pegou!' },
-    { who: 'maju', text: 'Boa dica, Micaele!' },
+    { who: 'mica', text: 'Devagar com o coração, filha, que a maré não tem pressa. Se te perder, olha o minimapa.' },
+    { who: 'maju', text: 'Tô de olho, mainha! Já já volto pra te dar um abraço.' },
+    { who: 'mica', text: 'Vai, meu amor. Cada conta que tu acha é um pedacinho de orgulho aqui no peito da mainha.' },
   ],
   // Titio Jeff — praia de Boa Viagem
   jeff: [

@@ -621,8 +621,11 @@
       ];
     } else {
       const key = first ? npc.key : npc.key + 'Again';
-      lines = STORY.meet[key] || STORY.meet[npc.key];
+      // fallback robusto: jona/mica só têm 1ª fala via tutorial (STORY.meet.start);
+      // se a chave não existir (ex.: save migrado sem tutorial), nunca passa undefined.
+      lines = STORY.meet[key] || STORY.meet[npc.key + 'Again'] || STORY.meet[npc.key] || STORY.meet.start;
     }
+    if (!lines?.length) return; // segurança extra: sem falas, não trava a tela
     startDialogue(lines, CHAPTERS[npc.d].scene, () => enterWorld());
   }
 
