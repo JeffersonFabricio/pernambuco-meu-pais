@@ -10,7 +10,7 @@ const CHAPTERS = [
     scene: 1, color: '#f2c038', cord: 'Cordão do Sol',
     fases: [
       { anchor: 1, e: 1 },
-      { t: 'Rua do Bom Jesus', e: 2, fact: 'A Rua do Bom Jesus, com seu casa colorido, já foi eleita uma das ruas mais bonitas do mundo.' },
+      { t: 'Rua do Bom Jesus', e: 2, fact: 'A Rua do Bom Jesus, com sua estrutura colonial, já foi eleita uma das ruas mais bonitas do mundo.' },
       { t: 'Kahal Zur Israel', e: 4, fact: 'Na Rua do Bom Jesus fica a Kahal Zur Israel, a primeira sinagoga das Américas, fundada em 1636.' },
       { t: 'Torre Malakoff', e: 7, fact: 'A Torre Malakoff era a porta do antigo Arsenal da Marinha. Hoje é mirante e observatório do céu.' },
       { t: 'Ponte Maurício de Nassau', e: 5, fact: 'A Ponte Maurício de Nassau, de 1644, é tida como a primeira grande ponte do Brasil.' },
