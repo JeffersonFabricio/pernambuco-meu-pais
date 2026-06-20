@@ -38,7 +38,10 @@
     sceneN: 10,
     winT: 0,
     t: 0,
+    fadeT: 0.4,        // fade-in inicial
+    _lastMode: null,   // detecção de troca de tela p/ transição
   };
+  const TRANS = 0.34;  // duração do fade entre telas (s)
 
   // ---------- texto ----------
   function wrap(text, maxW, size) {
@@ -109,6 +112,9 @@
   function drawSpeaker(fn, x, y, active, t, phase) {
     ctx.save();
     const bob = active ? Math.sin(t * 3 + phase) * 2.5 : Math.sin(t * 1.4 + phase) * 1;
+    // sombra no chão (fixa, dá apoio ao personagem)
+    ctx.globalAlpha = active ? 0.22 : 0.12;
+    PR(ctx, x + 6, y + 90, 50, 7, '#000');
     if (active) {
       // leve halo de atenção
       ctx.globalAlpha = 0.18;
@@ -216,9 +222,10 @@
       const ch = CHAPTERS[i];
       const { done, avail } = chapterState(c);
       const cur = avail && !done;
-      const r = cur ? 20 + Math.sin(t * 4) * 2 : 18;
-      PR(ctx, x - r, y - r, r * 2, r * 2, done ? ch.color : avail ? '#f2c038' : '#8a8070');
-      PR(ctx, x - r + 4, y - r + 4, r * 2 - 8, r * 2 - 8, done ? ch.color : avail ? '#fff0a0' : '#9a9080');
+      const r = 18;
+      const base = done ? ch.color : avail ? '#d9a420' : '#7a7468';
+      const face = done ? ch.color : avail ? '#ffe98a' : '#9a9080';
+      drawNode(ctx, x, y, r, base, face, cur ? 0.5 + 0.5 * Math.sin(t * 4) : 0);
       pTxt(ctx, done ? '✓' : `${c}`, x, y, 17, done ? '#fff' : avail ? '#5a3a10' : '#6a6358');
       pTxt(ctx, ch.short, x, y + r + 12, 10, avail ? '#3a2a10' : '#8a8070');
       if (cur) {
@@ -271,9 +278,10 @@
       const [x, y] = faseNodePos(k);
       const done = g <= S.save.prog;
       const avail = g === S.save.prog + 1;
-      const r = avail ? 30 + Math.sin(t * 4) * 2 : 28;
-      PR(ctx, x - r, y - r, r * 2, r * 2, done ? ch.color : avail ? '#f2c038' : 'rgba(110,105,95,0.85)');
-      PR(ctx, x - r + 5, y - r + 5, r * 2 - 10, r * 2 - 10, done ? ch.color : avail ? '#fff0a0' : 'rgba(125,120,110,0.9)');
+      const r = 28;
+      const base = done ? ch.color : avail ? '#d9a420' : 'rgba(86,82,74,0.85)';
+      const face = done ? ch.color : avail ? '#ffe98a' : 'rgba(120,115,105,0.85)';
+      drawNode(ctx, x, y, r, base, face, avail ? 0.5 + 0.5 * Math.sin(t * 4) : 0);
       pTxt(ctx, done ? '✓' : `${k + 1}`, x, y - 4, 20, done ? '#fff' : avail ? '#5a3a10' : '#55504a');
       const L = getLevel(g);
       const short = L.title.length > 14 ? L.title.slice(0, 13) + '…' : L.title;
@@ -316,9 +324,15 @@
     PR(ctx, 0, 0, W, H, 'rgba(5,8,16,0.72)');
     const L = S.cur;
     const pulse = 26 + Math.sin(t * 4) * 4;
+    // halo suave atrás da conta (mesma forma, ampliada e translúcida)
+    ctx.save();
+    ctx.globalAlpha = 0.16 + Math.sin(t * 4) * 0.05;
+    drawBead(ctx, W / 2, 260, pulse * 1.9, L.color, true);
+    ctx.restore();
     for (let i = 0; i < 12; i++) {
       const a = (i / 12) * Math.PI * 2 + t;
-      PR(ctx, W / 2 + Math.cos(a) * 70 - 3, 260 + Math.sin(a) * 70 - 3, 6, 6, L.color);
+      const rad = 70 + Math.sin(t * 3 + i) * 6; // raio pulsante
+      PR(ctx, W / 2 + Math.cos(a) * rad - 3, 260 + Math.sin(a) * rad - 3, 6, 6, L.color);
     }
     drawBead(ctx, W / 2, 260, pulse, L.color, true);
     pTxt(ctx, '✦ conta recuperada! ✦', W / 2, 350, 15, '#fff8d0');
@@ -411,6 +425,9 @@
 
     ctx.clearRect(0, 0, W, H);
 
+    // troca de tela → dispara fade-in suave
+    if (S.mode !== S._lastMode) { S.fadeT = TRANS; S._lastMode = S.mode; }
+
     switch (S.mode) {
       case 'title':
         drawTitle(t);
@@ -450,6 +467,13 @@
         S.winT += dt;
         drawFim(S.winT);
         break;
+    }
+
+    // overlay da transição (fade a partir do escuro)
+    if (S.fadeT > 0) {
+      const a = (S.fadeT / TRANS) ** 1.4; // ease-out
+      PR(ctx, 0, 0, W, H, `rgba(9,14,26,${a})`);
+      S.fadeT -= dt;
     }
     requestAnimationFrame(frame);
   }
