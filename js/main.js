@@ -77,22 +77,32 @@
 
   // personagens-guia da família — posicionados na faixa de cima do bairro
   const NPCS = [
-    { key: 'jona', d: 0, dx: -52, dy: -176, draw: drawJonatha, kid: true },
-    { key: 'mica', d: 0, dx: 52, dy: -176, draw: drawMicaele, kid: true },
-    { key: 'jeff', d: 1, dx: 0, dy: -176, draw: drawJeff },
-    { key: 'vova', d: 6, dx: 0, dy: -176, draw: drawVova },
-    { key: 'vovo', d: 8, dx: 0, dy: -214, draw: drawVovo, ending: true },
+    { key: 'jona',    d: 0, dx: -52, dy: -176, draw: drawJonatha, kid: true },
+    { key: 'mica',    d: 0, dx:  52, dy: -176, draw: drawMicaele, kid: true },
+    { key: 'jeff',    d: 1, dx:   0, dy: -176, draw: drawJeff },
+    { key: 'primos',  d: 2, dx:   0, dy: -176, draw: drawPrimos, kid: true, lesson: 'Primo é parceiro pra toda aventura, chuva ou sol.' },
+    { key: 'renato',  d: 3, dx:   0, dy: -176, draw: drawRenato, lesson: 'Fé é o que nos carrega quando as pernas cansam.' },
+    { key: 'bruno',   d: 5, dx:   0, dy: -176, draw: drawBruno, lesson: 'A família só soa bonito quando tá toda unida.' },
+    { key: 'vova',    d: 6, dx:   0, dy: -176, draw: drawVova },
+    { key: 'vovoMae', d: 7, dx:   0, dy: -176, draw: drawVovoMae, lesson: 'O amor que vai pro céu não desaparece.' },
+    { key: 'vovo',    d: 8, dx:   0, dy: -214, draw: drawVovo, ending: true },
   ];
   NPCS.forEach(n => { const c = districtCenter(n.d); n.x = c.x + n.dx; n.y = c.y + n.dy; });
 
   // quem fala nos diálogos (retrato + nome + cor)
   const SPEAKERS = {
-    maju: { name: 'MAJU', color: '#f2c038', face: MAJU_FACE, pal: FACE_PAL, body: drawMaju },
-    vovo: { name: 'VOVÔ CHICO', color: '#caa15a', face: VOVO_FACE, pal: VOVO_FACE_PAL, body: drawVovo },
-    jona: { name: 'JONATHA', color: '#3fae7a', body: drawJonatha },
-    mica: { name: 'MICAELE', color: '#e87ab0', body: drawMicaele },
-    jeff: { name: 'TITIO JEFF', color: '#f2a83a', body: drawJeff },
-    vova: { name: 'VOVÓ', color: '#c79bd0', body: drawVova },
+    maju:    { name: 'MAJU',          color: '#f2c038', face: MAJU_FACE, pal: FACE_PAL, body: drawMaju },
+    vovo:    { name: 'VOVÔ CHICO',    color: '#caa15a', face: VOVO_FACE, pal: VOVO_FACE_PAL, body: drawVovo },
+    jona:    { name: 'JONATHA',       color: '#3fae7a', body: drawJonatha },
+    mica:    { name: 'MICAELE',       color: '#e87ab0', body: drawMicaele },
+    jeff:    { name: 'TITIO JEFF',    color: '#f2a83a', body: drawJeff },
+    vova:    { name: 'VOVÓ',          color: '#c79bd0', body: drawVova },
+    bruno:   { name: 'TITIO BRUNO',   color: '#8b5e2a', body: drawBruno },
+    renato:  { name: 'TITIO RENATO',  color: '#1e3a6e', body: drawRenato },
+    ravi:    { name: 'PRIMO RAVI',    color: '#e07020', body: drawRavi },
+    nico:    { name: 'PRIMO NICOLAS', color: '#2a8a3a', body: drawNico },
+    primos:  { name: 'OS PRIMOS',     color: '#e07020', body: drawRavi },
+    vovoMae: { name: 'VOVÓ MARIA',    color: '#f0d878', body: drawVovoMae },
   };
 
   // ---------- save (v3: done = fases concluídas; met = quem já conheci) ----------
@@ -289,13 +299,18 @@
   function drawTitle(t) {
     drawScene(10, ctx, t);
     jangadaSil(ctx, 180 + Math.sin(t * 0.5) * 8, 480 + Math.sin(t * 1.2) * 3, 1.3, '#1a1020');
-    panel(ctx, 24, 150, W - 48, 138, 'rgba(8,14,26,0.85)');
-    pTxt(ctx, 'MARÉS', W / 2, 188, 40, '#f2c038');
-    pTxt(ctx, 'DO RECIFE', W / 2, 228, 28, '#f2904a');
-    pTxt(ctx, 'mundo livre · pixel art', W / 2, 260, 12, '#bfe6f2', 'center', false);
-    if (Math.sin(t * 3) > -0.3) pTxt(ctx, '— toque para começar —', W / 2, 560, 15, '#fff8d0');
-    pTxt(ctx, 'explore o Recife · 81 contas · DDD 81', W / 2, 590, 11, '#d8b8a0', 'center', false);
-    if (doneCount() > 0) pTxt(ctx, `progresso salvo: ${doneCount()}/81 contas`, W / 2, 614, 11, '#9fd8f0', 'center', false);
+    // dedicatória — surge suavemente
+    ctx.save();
+    ctx.globalAlpha = Math.max(0, Math.min(1, t * 0.35 - 0.1)) * (0.75 + 0.18 * Math.sin(t * 0.7));
+    ctx.restore();
+    // painel principal
+    panel(ctx, 24, 148, W - 48, 156, 'rgba(8,14,26,0.88)');
+    pTxt(ctx, 'UM SONHO', W / 2, 184, 40, '#f2c038');
+    pTxt(ctx, 'Andando pela cidade', W / 2, 230, 18, '#f2904a', 'center', false);
+    pTxt(ctx, '✦  mundo livre  ·  pixel art  ✦', W / 2, 256, 11, '#bfe6f2', 'center', false);
+    if (Math.sin(t * 3) > -0.3) pTxt(ctx, '— toque para começar —', W / 2, 556, 15, '#fff8d0');
+    pTxt(ctx, 'explore o Recife · 81 contas · DDD 81', W / 2, 588, 11, '#d8b8a0', 'center', false);
+    if (doneCount() > 0) pTxt(ctx, `progresso salvo: ${doneCount()}/81 contas`, W / 2, 610, 11, '#9fd8f0', 'center', false);
   }
 
   // ---------- conta conquistada ----------
@@ -340,12 +355,21 @@
     drawMaju(ctx, 180 + 4, jy - 58, 3);
     PR(ctx, 165, jy - 30, 6, 6, 'rgba(255,248,208,0.8)'); // mãos dadas (brilho)
     if (t > 2) pTxt(ctx, 'O colar brilhou inteiro no peito do Recife.', W / 2, 130, 12, '#fff8d0');
-    if (t > 4) pTxt(ctx, 'E o Vovô levou a Maju', W / 2, H - 128, 16, '#fff8d0');
-    if (t > 4.6) pTxt(ctx, 'passear pelo céu do Recife.', W / 2, H - 104, 16, '#fff8d0');
-    if (t > 6) {
-      pTxt(ctx, '✦ FIM ✦', W / 2, H - 64, 20, '#f2c038');
-      if (Math.sin(t * 3) > 0) pTxt(ctx, '— toque para voltar ao Recife —', W / 2, H - 36, 11, '#bfe6f2');
+    if (t > 4) pTxt(ctx, 'E o Vovô levou a Maju', W / 2, H - 152, 16, '#fff8d0');
+    if (t > 4.6) pTxt(ctx, 'pro lugar onde o amor não tem fim.', W / 2, H - 128, 16, '#fff8d0');
+    if (t > 5.8) {
+      ctx.save(); ctx.globalAlpha = Math.min(1, (t - 5.8) * 0.7);
+      pTxt(ctx, 'Jonatha · Micaele · Jeff · Bruno', W / 2, H - 100, 10, '#f0d878', 'center', false);
+      pTxt(ctx, 'Renato · Ravi · Nicolas · Vovó · Vovó Maria', W / 2, H - 84, 10, '#f0d878', 'center', false);
+      ctx.restore();
     }
+    if (t > 7) {
+      pTxt(ctx, '✦ FIM ✦', W / 2, H - 58, 20, '#f2c038');
+      ctx.save(); ctx.globalAlpha = Math.min(1, (t - 7) * 0.5);
+      pTxt(ctx, 'Para Maria Júlia', W / 2, H - 34, 12, '#f0d878', 'center', false);
+      ctx.restore();
+    }
+    if (t > 8 && Math.sin(t * 3) > 0) pTxt(ctx, '— toque para voltar ao Recife —', W / 2, H - 14, 11, '#bfe6f2');
   }
 
   // ============================================================
@@ -591,7 +615,8 @@
   // ---------- joystick + interação ----------
   const JOY = { active: false, baseX: 70, baseY: H - 78, R: 46, kx: 0, ky: 0 };
   const ENTER = { x: W - 152, y: H - 66, w: 142, h: 48 };
-  const MUTE = { x: W - 42, y: 12, w: 30, h: 28 };
+  const MUTE  = { x: W - 42, y: 12, w: 30, h: 28 };
+  const BTN3D = { x: W - 152, y: 8, w: 50, h: 44 };
   const keys = {};
 
   function updateJoy(x, y) {
@@ -626,7 +651,12 @@
       lines = STORY.meet[key] || STORY.meet[npc.key + 'Again'] || STORY.meet[npc.key] || STORY.meet.start;
     }
     if (!lines?.length) return; // segurança extra: sem falas, não trava a tela
-    startDialogue(lines, CHAPTERS[npc.d].scene, () => enterWorld());
+    startDialogue(lines, CHAPTERS[npc.d].scene, () => {
+      enterWorld();
+      if (first && npc.lesson) {
+        S.toast = { text: '✦ Lição aprendida', sub: npc.lesson, t: 5.5, color: '#f2c038', bg: 'rgba(20,12,4,0.94)', textColor: '#f2c038' };
+      }
+    });
   }
 
   function worldPointerDown(x, y) {
@@ -751,11 +781,10 @@
 
   function drawWorldHud(t) {
     panel(ctx, 10, 8, W - 20, 44, 'rgba(8,14,26,0.9)', '#f2c038');
-    pTxt(ctx, 'RECIFE LIVRE', 18, 30, 14, '#f2c038', 'left');
-    pTxt(ctx, `♦ ${doneCount()}/81`, W / 2 + 30, 30, 14, '#bfe6f2');
+    pTxt(ctx, 'UM SONHO', 18, 30, 14, '#f2c038', 'left');
+    pTxt(ctx, `♦ ${doneCount()}/81`, W / 2 + 14, 30, 14, '#bfe6f2');
     PR(ctx, MUTE.x, MUTE.y, MUTE.w, MUTE.h, '#1a2a3f');
     pTxt(ctx, AudioFX.muted ? '♪✕' : '♪', MUTE.x + MUTE.w / 2, MUTE.y + 15, 13, AudioFX.muted ? '#5a6b7a' : '#bfe6f2');
-    drawMinimap();
     // direcional
     ctx.save();
     ctx.beginPath(); ctx.arc(JOY.baseX, JOY.baseY, JOY.R, 0, Math.PI * 2);
@@ -783,11 +812,14 @@
       PR(ctx, ENTER.x, ENTER.y, ENTER.w, ENTER.h - 4, col);
       pTxt(ctx, btn, ENTER.x + ENTER.w / 2, ENTER.y + ENTER.h / 2 - 2, 15, '#fff');
     }
-    // toast de bairro liberado
+    // toast (bairro liberado ou lição aprendida)
     if (S.toast) {
-      ctx.save(); ctx.globalAlpha = Math.min(1, S.toast.t);
-      panel(ctx, 30, 70, W - 60, 32, 'rgba(8,30,18,0.92)', '#67b06b');
-      pTxt(ctx, S.toast.text, W / 2, 86, 11, '#bfe6a0');
+      const tk = S.toast;
+      ctx.save(); ctx.globalAlpha = Math.min(1, tk.t);
+      const th = tk.sub ? 48 : 32;
+      panel(ctx, 30, 70, W - 60, th, tk.bg || 'rgba(8,30,18,0.92)', tk.color || '#67b06b');
+      pTxt(ctx, tk.text, W / 2, 86, 11, tk.textColor || '#bfe6a0');
+      if (tk.sub) pTxt(ctx, tk.sub, W / 2, 104, 10, '#fff8d0', 'center', false);
       ctx.restore();
     }
     if (S.helpT > 0 && !S.toast) {
@@ -815,10 +847,19 @@
     PR(ctx, mx + S.maju.x * sk - 2, my + S.maju.y * syk - 2, 4, 1, '#f2c038');
   }
 
-  function enterWorld() {
+  function enterWorld(d) {
     S.mode = 'world';
     JOY.active = false; JOY.kx = 0; JOY.ky = 0;
-    if (!walkable(S.maju.x, S.maju.y)) { const c = districtCenter(0); S.maju.x = c.x; S.maju.y = c.y + 70; }
+    if (d !== undefined) World3D.reset(d);
+  }
+
+  // Cria objeto S.near sintético a partir do portal de bairro
+  function districtNearObj(d) {
+    for (let k = 0; k < 9; k++) {
+      const g = d * 9 + k + 1;
+      if (!isDone(g)) return { g, d, title: ZONE[d].name, color: CHAPTERS[d].color, anchor: false };
+    }
+    return { g: d * 9 + 9, d, title: ZONE[d].name + ' ✓', color: CHAPTERS[d].color, anchor: false };
   }
 
   // ---------- entrada ----------
@@ -873,7 +914,9 @@
         if (!S.save.opened) {
           S.save.opened = true; save();
           startDialogue(STORY.opening, 7, () => startTutorial());
-        } else enterWorld();
+        } else {
+          startDialogue(STORY.opening, 7, () => enterWorld());
+        }
         break;
       case 'dialogue': dlgTap(); break;
       case 'puzzle':
@@ -881,7 +924,7 @@
         if (S.puzzle && !S.puzzle.solved) S.puzzle.tap(x, y);
         break;
       case 'bead': if (S.winT > 0.8) { AudioFX.tap(); afterBead(); } break;
-      case 'ceu': if (S.winT > 6) { enterWorld(); AudioFX.tap(); } break;
+      case 'ceu': if (S.winT > 8) { enterWorld(); AudioFX.tap(); } break;
     }
   }
 
@@ -913,10 +956,28 @@
         }
         drawDialogue(t);
         break;
-      case 'world':
-        updateWorld(dt);
-        drawWorld(t);
+      case 'world': {
+        let vx = 0, vy = 0;
+        if (JOY.active) { vx = JOY.kx / JOY.R; vy = JOY.ky / JOY.R; }
+        else {
+          if (keys.ArrowLeft  || keys.a) vx -= 1;
+          if (keys.ArrowRight || keys.d) vx += 1;
+          if (keys.ArrowUp    || keys.w) vy -= 1;
+          if (keys.ArrowDown  || keys.s) vy += 1;
+          const m = Math.hypot(vx, vy); if (m > 1) { vx /= m; vy /= m; }
+        }
+        World3D.update(dt, vx, vy, W, H, districtUnlocked);
+        World3D.draw(ctx, W, H, t, districtUnlocked);
+        // proximidade (portais e NPCs)
+        const sp3d  = World3D.nearSpot(districtUnlocked);
+        const npc3d = World3D.nearNpc(districtUnlocked);
+        S.nearNpc = npc3d || null;
+        S.near = (!npc3d && sp3d) ? districtNearObj(sp3d.d) : null;
+        drawWorldHud(t);
+        if (S.helpT > 0) S.helpT -= dt;
+        if (S.toast) { S.toast.t -= dt; if (S.toast.t <= 0) S.toast = null; }
         break;
+      }
       case 'puzzle':
         drawScene(S.cur.scene, ctx, t);
         PR(ctx, PA.x - 6, PA.y - 6, PA.w + 12, PA.h + 12, 'rgba(8,14,26,0.78)');

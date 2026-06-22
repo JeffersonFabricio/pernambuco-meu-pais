@@ -4,15 +4,11 @@
 // who: 'maju' | 'vovo' | 'nar' (narrador)
 const STORY = {
   opening: [
-    { who: 'nar',  text: 'Recife, Pernambuco. O dia ainda nem nasceu e a maré já conversa com a cidade.' },
-    { who: 'vovo', text: 'Maju, minha neta... o vento da madrugada levou as contas do meu colar de marés.' },
-    { who: 'maju', text: 'O colar que conta as histórias do Recife, vovô?' },
-    { who: 'vovo', text: 'Esse mesmo. Oitenta e uma contas, uma pra cada maré. Caíram por todos os cantos da cidade.' },
-    { who: 'maju', text: 'Oitenta e uma?! É o DDD do Recife, vovô! 81! Até o colar sabe de onde é.' },
-    { who: 'vovo', text: 'Pois é. Nove cordões, nove cantos da cidade, nove contas em cada um.' },
-    { who: 'vovo', text: 'Hoje, no pôr do sol, saio com os jangadeiros. Queria partir com o colar inteiro...' },
-    { who: 'maju', text: 'Então eu vou atrás delas! Antes do sol se deitar, o colar tá completo!' },
-    { who: 'nar',  text: 'E assim começa a jornada de Maju pelo sonho.' },
+    { who: 'nar',  text: 'Você fecha os olhos...' },
+    { who: 'nar',  text: 'É um sonho.' },
+    { who: 'nar',  text: 'O Recife pulsa ao longe — frevo, maré, mangue, arrecife.' },
+    { who: 'nar',  text: 'Você é Maju, neta do Vovô Chico. E a cidade tem algo pra te mostrar.' },
+    { who: 'maju', text: '... Onde eu tô?' },
   ],
 
   ending: [
@@ -200,33 +196,33 @@ const PUZZLE_HINTS = {
 STORY.meet = {
   // Tutorial: Jonatha (pai) e Micaele (mãe) se despedem da filha (Recife Antigo)
   start: [
-    { who: 'jona', text: 'Maju! Vem cá, minha filha. Eu e tua mãe a gente tava te esperando.' },
-    { who: 'mica', text: 'Ô coisa linda da mainha... cada dia mais a cara do teu pai. Vem cá, deixa eu te abraçar.' },
-    { who: 'maju', text: 'Painho! Mainha! O vovô perdeu as contas do colar das marés... eu prometi que ia achar todas antes do pôr do sol!' },
-    { who: 'jona', text: 'A gente sabe, filha. E sabe que tu dá conta de tudo. Mas a cidade é grande — deixa o painho te ensinar primeiro.' },
-    { who: 'jona', text: 'Usa o direcional no canto da tela pra caminhar. Vai, experimenta, que eu tô bem aqui de olho em ti.' },
-    { who: 'maju', text: 'Assim, painho? Ô, que massa! Dá pra ir pra qualquer canto!' },
-    { who: 'mica', text: 'Isso, meu amor. As contas do colar do vovô se espalharam — são aquelas plaquinhas com "?".' },
-    { who: 'mica', text: 'Chega pertinho de uma e toca em ENTRAR. Confia em ti, que a gente confia.' },
-    { who: 'jona', text: 'Cada bairro tem nove contas. Junta as nove e a ponte pro próximo bairro se abre, viu, filha?' },
-    { who: 'mica', text: 'E tu não vai sozinha não. A família toda tá espalhada pela cidade só pra te ver passar.' },
-    { who: 'jona', text: 'Teu titio te espera na praia, tua vó no frevo... e o vovô, lá no cais, contando os minutos.' },
-    { who: 'maju', text: 'Então bora! Esse colar volta inteirinho — por vocês e pelo vovô. Eu prometo!' },
-    { who: 'mica', text: 'Vai com Deus, minha filha. A mainha fica com o coração apertado e cheio de orgulho.' },
-    { who: 'nar', text: 'Jonatha e Micaele acenam, lado a lado, até Maju virar a esquina. O Recife inteiro se abre diante dela.' },
+    { who: 'jona', text: 'Maju! Que bom que chegou! Bem-vinda ao Recife Antigo, filha!' },
+    { who: 'mica', text: 'Por aqui tudo começou — a cidade, as histórias, a nossa família.' },
+    { who: 'jona', text: 'Mas aconteceu algo hoje. O vovô Chico perdeu o colar das marés.' },
+    { who: 'maju', text: 'O colar do vovô? O que guarda as histórias do Recife?' },
+    { who: 'mica', text: 'Esse mesmo. Oitenta e uma contas espalhadas por toda a cidade. Oitenta e um — o DDD do Recife!' },
+    { who: 'jona', text: 'Hoje ele parte com os jangadeiros. Precisa do colar inteiro antes do pôr do sol.' },
+    { who: 'maju', text: 'Então eu vou atrás delas! Por onde começo?' },
+    { who: 'jona', text: 'Por aqui mesmo! Usa o direcional pra caminhar. Vai, experimenta!' },
+    { who: 'mica', text: 'As contas aparecem como plaquinhas. Chega perto de uma e toca em ENTRAR.' },
+    { who: 'jona', text: 'Cada bairro tem nove contas. Completa as nove e o próximo bairro se abre pra ti.' },
+    { who: 'mica', text: 'A família toda tá espalhada pela cidade — teu titio, tua vó, tua vovó Maria...' },
+    { who: 'jona', text: 'E o vovô Chico te espera lá no cais, contando os minutos.' },
+    { who: 'maju', text: 'Esse colar volta inteirinho. Eu prometo!' },
+    { who: 'nar',  text: 'Jonatha e Micaele acenam até Maju virar a esquina. O Recife começa a se abrir diante dela.' },
   ],
   // Primeira conversa a sós com o pai (rede de segurança / saves antigos)
   jona: [
-    { who: 'jona', text: 'Tudo bem por aí, minha filha? O painho fica aqui no Recife Antigo, pode ir tranquila.' },
-    { who: 'maju', text: 'Tô bem, painho! Só passei pra te ver um cadinho.' },
+    { who: 'jona', text: 'Tudo bem por aí, minha filha? Eu fico aqui no Recife Antigo, pode ir tranquila.' },
+    { who: 'maju', text: 'Tô bem, painho! Só passei pra te ver.' },
     { who: 'jona', text: 'Vem cá então. Sabe o que mais me enche de orgulho? Não são as contas, não. É a coragem que tu tem.' },
     { who: 'maju', text: 'Aprendi com o senhor, painho.' },
-    { who: 'jona', text: 'Aprendeu nada, já nasceu valente. Vai, que o painho tá com o coração contigo a cada passo.' },
+    { who: 'jona', text: 'Aprendeu nada, já nasceu valente. Vai, que o coração tá contigo a cada passo.' },
   ],
   jonaAgain: [
     { who: 'jona', text: 'Tá indo lindo, filha. Completa as nove contas do bairro que a ponte se abre pra ti.' },
-    { who: 'maju', text: 'Pode deixar, painho! Faço por você e pela mainha.' },
-    { who: 'jona', text: 'Esse é o jeito da minha menina. Vai com cuidado — e volta logo pro abraço do painho.' },
+    { who: 'maju', text: 'Pode deixar, painho!' },
+    { who: 'jona', text: 'Esse é o jeito da minha menina. Vai com cuidado e volta logo pro abraço do painho.' },
   ],
   // Primeira conversa a sós com a mãe (rede de segurança / saves antigos)
   mica: [
@@ -265,15 +261,98 @@ STORY.meet = {
     { who: 'vova', text: 'Dança, minha neta! Quem tem frevo no pé não perde o compasso da vida.' },
     { who: 'maju', text: 'Tô no ritmo, vovó! Já volto.' },
   ],
+
+  // Primos Ravi e Nicolas — Recife na Chuva (d2)
+  primos: [
+    { who: 'ravi', text: 'Prima Maju chegou! Nicolas, ela tá aqui, olha!' },
+    { who: 'nico', text: 'Ê, prima! Pensamos que ia perder a chuva do Recife!' },
+    { who: 'maju', text: 'Ravi! Nicolas! Que saudade de vocês dois!' },
+    { who: 'ravi', text: 'A chuva aqui não é pra correr, prima. É pra dançar na calçada.' },
+    { who: 'nico', text: 'A gente sempre vai tá junto, Maju. Primo é isso: parceiro pra toda aventura, chuva ou sol.' },
+    { who: 'maju', text: 'Com vocês dois do meu lado, nada parece difícil!' },
+    { who: 'ravi', text: 'Vai lá, prima! Cada conta que tu achar, a gente tá aqui torcendo.' },
+    { who: 'nico', text: 'E quando tu voltar a gente conta história de chuva. Combinado?' },
+    { who: 'maju', text: 'Combinado, primos! Já já tô de volta com o colar quase cheio!' },
+  ],
+  primosAgain: [
+    { who: 'ravi', text: 'Tá arrasando, prima! Já perdemos a conta de quantas contas tu achou.' },
+    { who: 'nico', text: 'A gente não vai a lugar nenhum, Maju. Tô aqui na chuva com o Ravi, sempre.' },
+    { who: 'maju', text: 'Adoro vocês dois! Já já volto!' },
+  ],
+
+  // Titio Renato — Manguezal (d3) — Padre Cícero e as promessas nordestinas
+  renato: [
+    { who: 'renato', text: 'Maju! É o titio Renato, aqui no meio do manguezal!' },
+    { who: 'maju',   text: 'Titio Renato! Que alegria te ver por aqui!' },
+    { who: 'renato', text: 'Vim te contar de uma devoção muito especial do nosso povo nordestino.' },
+    { who: 'maju',   text: 'Me conta, titio! Adoro quando você conta histórias.' },
+    { who: 'renato', text: 'Você sabe quem é o Padrinho Padre Cícero? Um padre do Juazeiro do Norte, no Ceará.' },
+    { who: 'renato', text: 'O povo nordestino ama ele como a um santo. Quando a gente tem um desejo no coração, faz uma promessa: "Padrinho, se acontecer, eu cumpro tal penitência."' },
+    { who: 'maju',   text: 'É uma promessa de amor e fé, titio?' },
+    { who: 'renato', text: 'Exatamente. É o amor transformado em compromisso com Deus. A nossa família fez promessa por você, Maju.' },
+    { who: 'maju',   text: 'Por mim?' },
+    { who: 'renato', text: 'Por ti. Porque o amor da família não tem distância — nem a do céu separa.' },
+    { who: 'maju',   text: 'Vou guardar isso no coração pra sempre, titio Renato.' },
+    { who: 'renato', text: 'A lição de hoje: fé é o que nos carrega quando as pernas cansam. Vai com Deus, sobrinha.' },
+  ],
+  renatoAgain: [
+    { who: 'renato', text: 'Lembra, Maju: fé não é ausência de medo. É seguir em frente mesmo com ele.' },
+    { who: 'maju',   text: 'Eu lembro, titio! Cada conta que acho é uma promessa cumprida.' },
+    { who: 'renato', text: 'Isso mesmo, sobrinha. O Padrinho Padre Cícero estaria orgulhoso de ti.' },
+  ],
+
+  // Titio Bruno — Pátio do Terço (d5, maracatu e comunidade)
+  bruno: [
+    { who: 'bruno', text: 'Maju! Titio Bruno aqui, no pátio do maracatu!' },
+    { who: 'maju',  text: 'Titio Bruno! Que barulho bonito é esse?' },
+    { who: 'bruno', text: 'É a alfaia, sobrinha. O tambor do maracatu. Sente como o chão treme?' },
+    { who: 'maju',  text: 'Parece que o coração da cidade tá batendo, titio!' },
+    { who: 'bruno', text: 'Exatamente. E sabe por que o tambor soa assim de forte?' },
+    { who: 'maju',  text: 'Por quê?' },
+    { who: 'bruno', text: 'Porque ninguém bate sozinho. Cada mão no couro, cada voz no canto — só funciona porque é junto.' },
+    { who: 'bruno', text: 'A família é igual, Maju. A gente só soa bonito quando tá unido.' },
+    { who: 'maju',  text: 'Então a nossa família é um maracatu, titio!' },
+    { who: 'bruno', text: 'Do melhor! Vai lá, sobrinha. O titio Bruno tá no seu ritmo, sempre.' },
+  ],
+  brunoAgain: [
+    { who: 'bruno', text: 'Ouve o tambor, Maju. Quando tiver com saudade da família, ele toca aqui dentro.' },
+    { who: 'maju',  text: 'Tô ouvindo, titio. Tô sempre ouvindo.' },
+    { who: 'bruno', text: 'Vai, sobrinha. O maracatu te acompanha em cada passo.' },
+  ],
+
+  // Vovó materna (Vovó Maria, no céu) — Beira do Mangue (d7)
+  vovoMae: [
+    { who: 'nar',     text: 'A brisa do mangue traz um perfume de saudade. Uma figura luminosa surge entre as raízes.' },
+    { who: 'vovoMae', text: 'Maju... minha menina linda...' },
+    { who: 'maju',    text: 'Vovó?! Mas como... você tá aqui?' },
+    { who: 'vovoMae', text: 'Vim do céu só pra te ver, meu amor. Não podia perder.' },
+    { who: 'maju',    text: 'Então o céu é real, vovó?' },
+    { who: 'vovoMae', text: 'Real como o amor que sinto por ti. E esse amor não tem distância, não tem fim.' },
+    { who: 'vovoMae', text: 'Na nossa família, as meninas levam o nome de Maria no coração. Você também, minha Maju.' },
+    { who: 'maju',    text: 'Maria... como a mãe de Jesus?' },
+    { who: 'vovoMae', text: 'E como todas as avós, mães e filhas que vieram antes de ti. Maria é força, é ternura, é amor que não acaba.' },
+    { who: 'maju',    text: 'Então não preciso ter medo de nada.' },
+    { who: 'vovoMae', text: 'Nunca, minha flor. O amor que vai pro céu não desaparece — fica guardado no coração de quem fica.' },
+    { who: 'nar',     text: 'A figura luminosa sorri e some devagar entre as raízes do mangue, deixando um calor no ar.' },
+  ],
+  vovoMaeAgain: [
+    { who: 'vovoMae', text: 'Estou sempre por perto, minha Maju. Nunca estás sozinha.' },
+    { who: 'maju',    text: 'Sinto isso, vovó. Sinto mesmo.' },
+    { who: 'vovoMae', text: 'Vai, meu amor. O colar vai ficar lindo.' },
+  ],
 };
 
 // Final: o Vovô leva a Maju pelo céu do Recife
 STORY.skyEnding = [
   { who: 'vovo', text: 'Oitenta e uma contas, Maju. O colar voltou a brilhar inteiro.' },
-  { who: 'maju', text: 'Conheci o Recife todinho, vovô. E reencontrei a nossa família pelo caminho.' },
+  { who: 'maju', text: 'Conheci o Recife todinho, vovô. E reencontrei a família pelo caminho.' },
+  { who: 'maju', text: 'Painho, mainha, titio Jeff, titio Bruno, titio Renato, os primos, vovó... e até a vovó Maria que veio do céu me ver.' },
   { who: 'vovo', text: 'Esse é o maior tesouro, minha neta: a cidade e a gente que faz ela.' },
+  { who: 'vovo', text: 'Aprendeu muito nessa jornada: coragem, fé, promessa do Padrinho, o ritmo do tambor, amor que não tem fim.' },
+  { who: 'maju', text: 'Aprendi com cada um. E cada lição vai ficar aqui no peito pra sempre.' },
   { who: 'vovo', text: 'Agora segura firme na minha mão. Vou te mostrar o Recife lá de cima.' },
   { who: 'maju', text: 'Lá de cima, vovô?' },
-  { who: 'vovo', text: 'Do céu, Maju. De onde a maré, o mangue e o frevo viram um só brilho.' },
-  { who: 'nar', text: 'A jangada se solta da água e sobe devagar, levando os dois pelo céu do Recife.' },
+  { who: 'vovo', text: 'Do céu, Maju. De onde a maré, o mangue, o frevo e o amor da família viram um só brilho.' },
+  { who: 'nar',  text: 'A jangada se solta da água e sobe devagar, levando os dois pelo céu do Recife.' },
+  { who: 'nar',  text: 'E em cada estrela que passa, um rosto familiar sorri.' },
 ];
