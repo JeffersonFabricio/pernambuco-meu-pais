@@ -266,6 +266,50 @@ function drawJonatha(ctx, x, y, s = U) { drawMap(ctx, JONA_MAP, JONA_PAL, x, y, 
 function drawMicaele(ctx, x, y, s = U) { drawMap(ctx, MICA_MAP, MICA_PAL, x, y, s); }
 function drawJeff(ctx, x, y, s = U) { drawMap(ctx, VOVO_MAP, JEFF_PAL, x, y, s); }
 function drawVova(ctx, x, y, s = U) { drawMap(ctx, VOVO_MAP, VOVA_PAL, x, y, s); }
+
+// Primos Ravi (boné laranja, camisa azul) e Nicolas (boné verde, camisa vermelha)
+const RAVI_PAL = {
+  g: '#e07020', h: '#241a12', f: '#cf9a68', k: '#140a05', m: '#8a4a38',
+  t: '#3a7ab0', T: '#2a5a88', d: '#b07a4a', p: '#7a4a2c', b: '#2a2a2a',
+};
+const NICO_PAL = {
+  g: '#2a8a3a', h: '#241a12', f: '#cf9a68', k: '#140a05', m: '#8a4a38',
+  t: '#c84040', T: '#a83030', d: '#b07a4a', p: '#4a5a6a', b: '#2a2a2a',
+};
+// Titio Bruno: chapéu de couro nordestino, barba fechada, camisa bege
+const BRUNO_PAL = {
+  p: '#8b5e2a', P: '#6e4820', f: '#c8886a', d: '#a86a48', k: '#140a05',
+  w: '#4a2a12', W: '#3a1e0a', c: '#d4b888', C: '#b89a66', n: '#7a5a3a', b: '#4a3020',
+};
+// Titio Renato: cabelo escuro, camisa azul-marinho
+const RENATO_PAL = {
+  p: '#2a1a12', P: '#1a0e08', f: '#c89a72', d: '#a87a52', k: '#140a05',
+  w: '#c89a72', W: '#a87a52', c: '#1e3a6e', C: '#152b52', n: '#4a4a5a', b: '#2a2a32',
+};
+// Vovó materna (no céu): tons etéreos, dourado-branco celestial
+const VOVO_MAE_PAL = {
+  p: '#f0eada', P: '#d9d0c0', f: '#f5ddc8', d: '#d4b898', k: '#3a3040',
+  w: '#f7f0e0', W: '#e8dfc8', c: '#e8d8a0', C: '#c8b878', n: '#d4c090', b: '#c0a860',
+};
+
+function drawRavi(ctx, x, y, s = U) { drawMap(ctx, JONA_MAP, RAVI_PAL, x, y, s); }
+function drawNico(ctx, x, y, s = U) { drawMap(ctx, JONA_MAP, NICO_PAL, x, y, s); }
+function drawBruno(ctx, x, y, s = U) { drawMap(ctx, VOVO_MAP, BRUNO_PAL, x, y, s); }
+function drawRenato(ctx, x, y, s = U) { drawMap(ctx, VOVO_MAP, RENATO_PAL, x, y, s); }
+function drawVovoMae(ctx, x, y, s = U) {
+  // halo etéreo suave — ela veio do céu
+  ctx.save();
+  ctx.globalAlpha = 0.18;
+  PR(ctx, x - s, y - s, 12 * s + 2 * s, 18 * s + 2 * s, '#f0d878');
+  ctx.restore();
+  drawMap(ctx, VOVO_MAP, VOVO_MAE_PAL, x, y, s);
+}
+// Dois primos lado a lado, centrados no ponto de origem
+function drawPrimos(ctx, x, y, s = U) {
+  drawMap(ctx, JONA_MAP, RAVI_PAL, x - Math.round(s * 4), y + Math.round(s * 0.5), s);
+  drawMap(ctx, JONA_MAP, NICO_PAL, x + Math.round(s * 4), y, s);
+}
+
 function drawCrab(ctx, x, y, s = U) { drawMap(ctx, CRAB_MAP, CRAB_PAL, x, y, s); }
 function drawShark(ctx, x, y, s = U, flip = false) {
   if (flip) {
