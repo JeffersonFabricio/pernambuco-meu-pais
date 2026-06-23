@@ -17,7 +17,6 @@ const STORY = {
     { who: 'vovo', text: 'O colar agora é seu. Quem guarda as histórias de um lugar, guarda o lugar.' },
     { who: 'maju', text: 'Boa viagem, vovô. Quando a jangada voltar, eu conto as histórias novas!' },
     { who: 'nar',  text: 'A jangada vira um ponto no horizonte dourado. E a maré, como sempre, promete voltar.' },
-    { who: 'nar',  text: 'FIM — Obrigado por jogar Um Sonho!' },
   ],
 
   levels: {
