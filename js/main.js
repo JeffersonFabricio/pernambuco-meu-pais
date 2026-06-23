@@ -101,7 +101,7 @@
   // quem fala nos diálogos (retrato + nome + cor)
   const SPEAKERS = {
     maju:    { name: 'MAJU',          color: '#f2c038', face: MAJU_FACE, pal: FACE_PAL, body: drawMaju },
-    vovo:    { name: 'VOVÔ CHICO',    color: '#caa15a', face: VOVO_FACE, pal: VOVO_FACE_PAL, body: drawVovo },
+    vovo:    { name: 'VOVÔ MARO',     color: '#caa15a', face: VOVO_FACE, pal: VOVO_FACE_PAL, body: drawVovo },
     jona:    { name: 'JONATHA',       color: '#3fae7a', body: drawJonatha },
     mica:    { name: 'MICAELE',       color: '#e87ab0', body: drawMicaele },
     jeff:    { name: 'TITIO JEFF',    color: '#f2a83a', body: drawJeff },
@@ -363,8 +363,8 @@
     pTxt(ctx, 'Andando pela cidade', W / 2, 230, 18, '#f2904a', 'center', false);
     pTxt(ctx, '✦  mundo livre  ·  pixel art  ✦', W / 2, 256, 11, '#bfe6f2', 'center', false);
     if (Math.sin(t * 3) > -0.3) pTxt(ctx, '— toque para começar —', W / 2, 556, 15, '#fff8d0');
-    pTxt(ctx, `explore o Recife · ${TOTAL_PHASES} contas`, W / 2, 588, 11, '#d8b8a0', 'center', false);
-    if (doneCount() > 0) pTxt(ctx, `progresso salvo: ${doneCount()}/${TOTAL_PHASES} contas`, W / 2, 610, 11, '#9fd8f0', 'center', false);
+    pTxt(ctx, `explore o Recife · ${TOTAL_PHASES} conchas`, W / 2, 588, 11, '#d8b8a0', 'center', false);
+    if (doneCount() > 0) pTxt(ctx, `progresso salvo: ${doneCount()}/${TOTAL_PHASES} conchas`, W / 2, 610, 11, '#9fd8f0', 'center', false);
   }
 
   // ---------- conta conquistada ----------
@@ -383,8 +383,8 @@
       PR(ctx, W / 2 + Math.cos(a) * rad - 3, 260 + Math.sin(a) * rad - 3, 6, 6, L.color);
     }
     drawBead(ctx, W / 2, 260, pulse, L.color, true);
-    pTxt(ctx, '✦ conta recuperada! ✦', W / 2, 350, 15, '#fff8d0');
-    pTxt(ctx, `${L.k}ª conta do ${L.cord}`, W / 2, 380, 18, L.color);
+    pTxt(ctx, '✦ concha recuperada! ✦', W / 2, 350, 15, '#fff8d0');
+    pTxt(ctx, `${L.k}ª concha do ${L.cord}`, W / 2, 380, 18, L.color);
     pTxt(ctx, `${doneCount() + (isDone(L.g) ? 0 : 1)} de ${TOTAL_PHASES}`, W / 2, 410, 13, '#9fb4d0');
     if (t > 0.8 && Math.sin(t * 4) > 0) pTxt(ctx, '— toque —', W / 2, 470, 13, '#f2c038');
   }
@@ -950,6 +950,8 @@
     pTxt(ctx, `♦ ${doneCount()}/${TOTAL_PHASES}`, W / 2 + 14, 30, 14, '#bfe6f2');
     PR(ctx, MUTE.x, MUTE.y, MUTE.w, MUTE.h, '#1a2a3f');
     pTxt(ctx, AudioFX.muted ? '♪✕' : '♪', MUTE.x + MUTE.w / 2, MUTE.y + 15, 13, AudioFX.muted ? '#5a6b7a' : '#bfe6f2');
+    // bairro atual + progresso (canto superior esquerdo, abaixo de UM SONHO)
+    drawDistrictTag();
     // direcional
     ctx.save();
     ctx.beginPath(); ctx.arc(JOY.baseX, JOY.baseY, JOY.R, 0, Math.PI * 2);
@@ -990,25 +992,44 @@
     if (S.helpT > 0 && !S.toast) {
       ctx.save(); ctx.globalAlpha = Math.min(1, S.helpT);
       pTxt(ctx, 'Arraste no canto p/ andar.', W / 2, H - 150, 12, '#fff8d0');
-      pTxt(ctx, 'Chegue numa conta ou pessoa e toque o botão.', W / 2, H - 132, 11, '#fff8d0');
+      pTxt(ctx, 'Chegue numa concha ou pessoa e toque o botão.', W / 2, H - 132, 11, '#fff8d0');
       ctx.restore();
     }
     drawBeacon(S.t);
   }
 
-  // seta dourada apontando para a próxima conta a completar
+  // etiqueta do bairro atual + progresso, fixa no canto superior esquerdo
+  function drawDistrictTag() {
+    let cd = World3D.currentDistrict();
+    if (cd < 0) { const tgt = nextUndoneAnywhere(); cd = tgt ? tgt.d : 0; }
+    const total = DISTRICT_SIZES[cd];
+    let done = 0;
+    for (let k = 0; k < total; k++) if (isDone(DISTRICT_STARTS[cd] + k)) done++;
+    const name = World3D.districtName(cd) || ZONE[cd].name;
+    const color = CHAPTERS[cd].color;
+    const complete = done >= total;
+    const prog = complete ? 'COMPLETO' : `${done}/${total}`;
+    ctx.font = 'bold 11px "Courier New", monospace';
+    const nameW = ctx.measureText(name).width;
+    const progW = ctx.measureText(prog).width;
+    panel(ctx, 10, 56, nameW + progW + 24, 20, 'rgba(8,14,26,0.82)', color);
+    pTxt(ctx, name, 18, 66, 11, color, 'left');
+    pTxt(ctx, prog, 18 + nameW + 8, 66, 11, complete ? '#88ee88' : '#bfe6f2', 'left');
+  }
+
+  // seta dourada — guia persistente apontando para o portal do bairro da próxima conta
   function drawBeacon(t) {
-    if (!S.beacon.active || S.beacon.t <= 0) return;
     const target = nextUndoneAnywhere();
-    if (!target) return;
-    const alpha = Math.min(1, S.beacon.t / 1.5) * (0.70 + 0.24 * Math.sin(t * 4));
-    const tx = target.x - S.cam.x;
-    const ty = target.y - S.cam.y;
+    if (!target) return;                         // tudo concluído: sem guia
+    const pos = World3D.spotScreen(target.d);    // posição de tela do portal (iso)
+    if (!pos) return;
+    const alpha = 0.72 + 0.22 * Math.sin(t * 4);
+    const tx = pos.x, ty = pos.y;
     ctx.save();
     ctx.globalAlpha = alpha;
     if (tx >= 24 && tx <= W - 24 && ty >= 60 && ty <= H - 120) {
-      // alvo visível: seta pulsante acima do spot
-      const ay = ty - 38 - Math.abs(Math.sin(t * 3.5)) * 10;
+      // alvo visível: seta pulsante acima do portal
+      const ay = ty - 50 - Math.abs(Math.sin(t * 3.5)) * 10;
       pTxt(ctx, '▼', tx, ay, 22, '#f2c038');
       pTxt(ctx, 'vá aqui', tx, ay - 20, 9, '#f2c038', 'center', false);
     } else {
@@ -1178,7 +1199,7 @@
         World3D.draw(ctx, W, H, t, districtUnlocked, d => {
           let cnt = 0;
           for (let k = 0; k < DISTRICT_SIZES[d]; k++) if (isDone(DISTRICT_STARTS[d] + k)) cnt++;
-          return cnt;
+          return { done: cnt, total: DISTRICT_SIZES[d] };
         });
         // proximidade (portais e NPCs)
         const sp3d  = World3D.nearSpot(districtUnlocked);

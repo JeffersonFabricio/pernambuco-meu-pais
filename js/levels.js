@@ -1,10 +1,10 @@
 // ============================================================
-// Marés do Recife — 31 fases (9 capítulos, 3–4 contas cada)
+// Marés do Recife — 31 fases (9 capítulos, 3–4 conchas cada)
 // Cada engine aparece 3 ou 4 vezes; engine 5 (labirinto) removido.
 // e: motor do puzzle (1..4, 6..10) | anchor: id em STORY.levels
 // ============================================================
 
-// Quantas contas por bairro (soma = 31)
+// Quantas conchas por bairro (soma = 31)
 const DISTRICT_SIZES  = [4, 4, 4, 4, 3, 3, 3, 3, 3];
 const DISTRICT_STARTS = (() => {
   const s = []; let g = 1;
@@ -113,14 +113,14 @@ const CHAPTERS = [
 // reações curtas pós-puzzle (rotacionam dentro do capítulo)
 const OUTRO_POOL = {
   1: [
-    { who: 'maju', text: 'Mais uma conta dourada no Cordão do Sol!' },
+    { who: 'maju', text: 'Mais uma concha dourada no Cordão do Sol!' },
     { who: 'vovo', text: 'O sol do Recife não esquece quem anda com ele.' },
     { who: 'nar', text: 'E o Cordão do Sol ganha mais um brilho.' },
   ],
   2: [
-    { who: 'maju', text: 'O mar devolveu mais uma conta!' },
+    { who: 'maju', text: 'O mar devolveu mais uma concha!' },
     { who: 'vovo', text: 'Maré que leva, maré que traz, minha neta.' },
-    { who: 'nar', text: 'A espuma se desfaz e deixa uma conta na areia.' },
+    { who: 'nar', text: 'A espuma se desfaz e deixa uma concha na areia.' },
   ],
   3: [
     { who: 'maju', text: 'Achei! Essa estava escondida na chuva!' },
@@ -128,9 +128,9 @@ const OUTRO_POOL = {
     { who: 'nar', text: 'Pinga a pinga, o Cordão da Chuva se enche.' },
   ],
   4: [
-    { who: 'maju', text: 'O mangue soltou mais uma conta!' },
+    { who: 'maju', text: 'O mangue soltou mais uma concha!' },
     { who: 'vovo', text: 'O mangue dá tudo a quem respeita o tempo dele.' },
-    { who: 'nar', text: 'A lama brilha: mais uma conta no cordão.' },
+    { who: 'nar', text: 'A lama brilha: mais uma concha no cordão.' },
   ],
   5: [
     { who: 'maju', text: 'Mais um tesouro pro Cordão da Memória!' },
@@ -138,17 +138,17 @@ const OUTRO_POOL = {
     { who: 'nar', text: 'E a memória da cidade ganha mais uma pérola.' },
   ],
   6: [
-    { who: 'maju', text: 'Essa conta veio quentinha do couro do tambor!' },
-    { who: 'vovo', text: 'O baque mora no peito; a conta é só lembrança.' },
+    { who: 'maju', text: 'Essa concha veio quentinha do couro do tambor!' },
+    { who: 'vovo', text: 'O baque mora no peito; a concha é só lembrança.' },
     { who: 'nar', text: 'O tambor ecoa e o cordão responde.' },
   ],
   7: [
     { who: 'maju', text: 'Peguei essa no rodopio da sombrinha!' },
     { who: 'vovo', text: 'Frevo é assim: ferve, gira e entrega.' },
-    { who: 'nar', text: 'No passo certo, mais uma conta cai na roda.' },
+    { who: 'nar', text: 'No passo certo, mais uma concha cai na roda.' },
   ],
   8: [
-    { who: 'maju', text: 'A antena captou mais uma conta!' },
+    { who: 'maju', text: 'A antena captou mais uma concha!' },
     { who: 'vovo', text: 'Lama e satélite, tudo na mesma batida.' },
     { who: 'nar', text: 'O mangue transmite: Cordão da Antena atualizado.' },
   ],

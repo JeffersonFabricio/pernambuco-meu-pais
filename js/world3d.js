@@ -6,6 +6,7 @@
 globalThis.World3D = (() => {
   const TW = 36, TH = 18, FH = 18;
   const COLS = 20, ROWS = 20;
+  const LABEL_DX = 24;   // desloca os nomes de bairro pra direita do pino
 
   // ---------- câmera dinâmica ----------
   // Valor inicial centrado na posição de start (col=5, row=3) para W=360 H=640
@@ -105,7 +106,7 @@ globalThis.World3D = (() => {
 
   // ---------- portais de bairro ----------
   const DISTRICT_SPOTS = [
-    { d: 0, col: 4,  row: 3,  name: 'Recife Antigo',   color: '#f2c038' },
+    { d: 0, col: 6,  row: 6,  name: 'Recife Antigo',   color: '#f2c038' },
     { d: 1, col: 9,  row: 6,  name: 'Beira-Mar',       color: '#1d9fd0' },
     { d: 2, col: 16, row: 6,  name: 'Dias de Chuva',   color: '#7d9fb4' },
     { d: 3, col: 3,  row: 10, name: 'Manguezal',       color: '#8a5a3a' },
@@ -126,7 +127,7 @@ globalThis.World3D = (() => {
     { key: 'bruno',   d: 5, col: 9,  row: 13, color: '#5a4030', label: 'T. BRUNO',  lesson: 'A família só soa bonito quando tá toda unida.' },
     { key: 'vova',    d: 6, col: 3,  row: 16, color: '#c79bd0', label: 'VOVÓ'       },
     { key: 'vovoMae', d: 7, col: 9,  row: 16, color: '#f0d878', label: 'VOVÓ MARIA', lesson: 'O amor que vai pro céu não desaparece.' },
-    { key: 'vovo',    d: 8, col: 7,  row: 18, color: '#f2c038', label: 'VOVÔ CHICO', ending: true },
+    { key: 'vovo',    d: 8, col: 7,  row: 18, color: '#f2c038', label: 'VOVÔ MARO', ending: true },
   ];
 
   // ---------- arte: random determinístico ----------
@@ -274,18 +275,23 @@ globalThis.World3D = (() => {
   }
 
   // ---------- céu e ambiente ----------
+  const HORIZON = 0.52;   // fração da altura onde o céu encontra o mar
+  const SUN_X = 290, SUN_Y = 95;
+
   function drawSky(ctx, W, H) {
-    const g = ctx.createLinearGradient(0, 0, 0, H * 0.55);
+    const hz = H * HORIZON;
+    const g = ctx.createLinearGradient(0, 0, 0, hz);
     g.addColorStop(0,    '#0a1e4a');
-    g.addColorStop(0.30, '#1a3a80');
-    g.addColorStop(0.60, '#2a6abf');
-    g.addColorStop(0.82, '#f08030');
-    g.addColorStop(1,    '#e04010');
-    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    g.addColorStop(0.34, '#21417f');
+    g.addColorStop(0.60, '#4274b4');
+    g.addColorStop(0.78, '#e8964c');
+    g.addColorStop(0.90, '#ef7a2e');
+    g.addColorStop(1,    '#f06a22');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, hz);
   }
 
   function drawSun(ctx) {
-    const sx = 290, sy = 95;
+    const sx = SUN_X, sy = SUN_Y;
     const halo = ctx.createRadialGradient(sx, sy, 14, sx, sy, 55);
     halo.addColorStop(0, 'rgba(255,200,80,0.38)');
     halo.addColorStop(1, 'rgba(255,100,20,0)');
@@ -321,12 +327,50 @@ globalThis.World3D = (() => {
     ctx.restore();
   }
 
-  function drawSeaBg(ctx, W, H) {
-    const seaY = H * 0.52;
-    const g = ctx.createLinearGradient(0, seaY, 0, H);
-    g.addColorStop(0, '#0d2d5a'); g.addColorStop(1, '#071828');
+  function drawSeaBg(ctx, W, H, t) {
+    const hz = H * HORIZON;
+    // água: mais clara perto do horizonte (espelha o céu), escurece ao fundo
+    const g = ctx.createLinearGradient(0, hz, 0, H);
+    g.addColorStop(0,    '#16466f');
+    g.addColorStop(0.16, '#0d2d5a');
+    g.addColorStop(1,    '#061322');
     ctx.fillStyle = g;
-    ctx.fillRect(0, seaY, W, H - seaY);
+    ctx.fillRect(0, hz, W, H - hz);
+
+    // brilho quente do poente derramado na água logo abaixo do horizonte
+    const warm = ctx.createLinearGradient(0, hz, 0, hz + 72);
+    warm.addColorStop(0, 'rgba(240,120,40,0.30)');
+    warm.addColorStop(1, 'rgba(240,120,40,0)');
+    ctx.fillStyle = warm; ctx.fillRect(0, hz, W, 72);
+
+    // coluna de reflexo do sol (cone que alarga com a distância)
+    const refl = ctx.createLinearGradient(0, hz, 0, hz + 130);
+    refl.addColorStop(0, 'rgba(255,202,96,0.40)');
+    refl.addColorStop(1, 'rgba(255,168,56,0)');
+    ctx.fillStyle = refl;
+    ctx.beginPath();
+    ctx.moveTo(SUN_X - 9,  hz);
+    ctx.lineTo(SUN_X + 9,  hz);
+    ctx.lineTo(SUN_X + 36, hz + 130);
+    ctx.lineTo(SUN_X - 36, hz + 130);
+    ctx.closePath();
+    ctx.fill();
+
+    // glints horizontais que cintilam descendo o reflexo
+    ctx.fillStyle = 'rgba(255,224,150,0.45)';
+    for (let i = 0; i < 5; i++) {
+      const p = (i + 0.5) / 5;
+      const gy = hz + 8 + p * 110;
+      const gw = 6 + p * 26 + Math.sin(t * 2.4 + i * 1.7) * 4;
+      ctx.fillRect(SUN_X - gw / 2, gy, gw, 1.4);
+    }
+
+    // linha do horizonte: fininha e luminosa
+    const hl = ctx.createLinearGradient(0, hz - 2, 0, hz + 2);
+    hl.addColorStop(0,   'rgba(255,222,160,0)');
+    hl.addColorStop(0.5, 'rgba(255,228,176,0.6)');
+    hl.addColorStop(1,   'rgba(255,222,160,0)');
+    ctx.fillStyle = hl; ctx.fillRect(0, hz - 2, W, 4);
   }
 
   // ---------- sprite da Maju (usa drawMajuWalk de sprites.js, reduzida para s≈2) ----------
@@ -365,7 +409,7 @@ globalThis.World3D = (() => {
     ctx.fillText(text, x, y);
   }
 
-  function drawSpot(ctx, t, spot, unlocked, doneCnt, isNext) {
+  function drawSpot(ctx, t, spot, unlocked, prog, isNext) {
     const { x, y } = iso(spot.col, spot.row);
     const cy = y + TH / 2;
 
@@ -380,7 +424,7 @@ globalThis.World3D = (() => {
         ctx.fillRect(x - 5, cy - 10, 10, 8);
         ctx.restore();
         ctx.save(); ctx.globalAlpha = 0.7;
-        spotLabel(ctx, x, cy - 20, spot.name, 'rgba(8,14,26,0.85)', '#7a9cb0');
+        spotLabel(ctx, x + LABEL_DX, cy - 20, spot.name, 'rgba(8,14,26,0.85)', '#7a9cb0');
         ctx.restore();
       } else {
         ctx.save(); ctx.globalAlpha = 0.22;
@@ -391,7 +435,7 @@ globalThis.World3D = (() => {
       return;
     }
 
-    const allDone = doneCnt >= 9;
+    const allDone = prog.total > 0 && prog.done >= prog.total;
     const pulse = Math.sin(t * 3 + spot.d) * 0.3 + 0.7;
     const rise = Math.sin(t * 2.5 + spot.d * 1.1) * 3;
 
@@ -411,9 +455,18 @@ globalThis.World3D = (() => {
     ctx.strokeStyle = spot.color; ctx.lineWidth = 1.5;
     ctx.beginPath(); ctx.moveTo(x, cy - 6 + rise); ctx.lineTo(x, cy); ctx.stroke();
 
-    spotLabel(ctx, x, cy - 26 + rise, spot.name, 'rgba(8,14,26,0.88)', spot.color);
-    const prog = allDone ? 'COMPLETO' : `${doneCnt}/9`;
-    spotLabel(ctx, x, cy - 37 + rise, prog, 'rgba(8,14,26,0.88)', allDone ? '#88ee88' : '#bfe6f2');
+    if (!allDone) {
+      // concha flutuante com brilho — deixa claro que há uma concha pra coletar aqui
+      const by = cy - 32 + rise;
+      ctx.strokeStyle = spot.color; ctx.lineWidth = 1.2;
+      ctx.beginPath(); ctx.moveTo(x, cy - 11 + rise); ctx.lineTo(x, by + 6); ctx.stroke();
+      ctx.save(); ctx.globalAlpha = 0.5 * pulse;
+      ctx.fillStyle = '#ffe8a8';
+      ctx.beginPath(); ctx.arc(x, by, 12, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+      drawBead(ctx, x, by, 6, spot.color, true);
+    }
+    // nome + progresso do bairro ativo agora ficam no HUD (drawWorldHud)
   }
 
   // ---------- NPC no mundo (sprites reais de sprites.js) ----------
@@ -452,7 +505,7 @@ globalThis.World3D = (() => {
     drawSun(ctx);
     drawClouds(ctx, t);
     drawBirds(ctx, t);
-    drawSeaBg(ctx, W, H);
+    drawSeaBg(ctx, W, H, t);
 
     // ordena tudo por profundidade isométrica (col+row crescente = mais perto)
     const queue = [];
@@ -467,8 +520,8 @@ globalThis.World3D = (() => {
     for (const sp of DISTRICT_SPOTS) {
       const unlocked = districtUnlockedFn(sp.d);
       const isNext = !unlocked && (sp.d === 0 || districtUnlockedFn(sp.d - 1));
-      const doneCnt = progressFn ? progressFn(sp.d) : 0;
-      queue.push({ kind: 'spot', sp, depth: sp.col + sp.row + 0.4, unlocked, doneCnt, isNext });
+      const prog = progressFn ? progressFn(sp.d) : { done: 0, total: 0 };
+      queue.push({ kind: 'spot', sp, depth: sp.col + sp.row + 0.4, unlocked, prog, isNext });
     }
     for (const npc of WORLD_NPCS) {
       queue.push({ kind: 'npc', npc, depth: npc.col + npc.row + 0.5 });
@@ -507,13 +560,36 @@ globalThis.World3D = (() => {
           }
         }
       } else if (item.kind === 'spot') {
-        drawSpot(ctx, t, item.sp, item.unlocked, item.doneCnt, item.isNext);
+        drawSpot(ctx, t, item.sp, item.unlocked, item.prog, item.isNext);
       } else if (item.kind === 'npc') {
         if (districtUnlockedFn(item.npc.d)) drawNpc(ctx, t, item.npc);
       } else if (item.kind === 'player') {
         drawPlayer(ctx, t);
       }
     }
+  }
+
+  // posição de tela (px) do portal de um distrito — usada pela seta-guia
+  function spotScreen(d) {
+    const sp = DISTRICT_SPOTS.find(s => s.d === d);
+    if (!sp) return null;
+    const { x, y } = iso(sp.col, sp.row);
+    return { x, y: y + TH / 2 };
+  }
+
+  // distrito que contém o tile (col,row), ou -1 fora de qualquer zona
+  function districtAt(col, row) {
+    const ci = Math.floor(col), ri = Math.floor(row);
+    for (let d = 0; d < ZONE_BOUNDS.length; d++) {
+      const z = ZONE_BOUNDS[d];
+      if (ri >= z.r1 && ri <= z.r2 && ci >= z.c1 && ci <= z.c2) return d;
+    }
+    return -1;
+  }
+  function currentDistrict() { return districtAt(player.col, player.row); }
+  function districtName(d) {
+    const sp = DISTRICT_SPOTS.find(s => s.d === d);
+    return sp ? sp.name : '';
   }
 
   // ---------- proximidade ----------
@@ -546,5 +622,5 @@ globalThis.World3D = (() => {
     camX = 0; camY = 0; // força re-centrar
   }
 
-  return { draw, update, nearSpot, nearNpc, reset, player };
+  return { draw, update, nearSpot, nearNpc, spotScreen, currentDistrict, districtName, reset, player };
 })();

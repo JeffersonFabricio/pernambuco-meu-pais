@@ -4,7 +4,7 @@
 // who: 'maju' | 'vovo' | 'nar' (narrador)
 const STORY = {
   opening: [
-    { who: 'nar',  text: 'Isto é um sonho?' },
+    { who: 'maju', text: 'Isto é um sonho?' },
     { who: 'vovo',  text: 'O Recife pulsa ao longe, frevo, batuque, mangue, arrecife.' },
     { who: 'maju',  text: 'Você é o Vovô?' },
     { who: 'maju', text: '... Onde eu tô?' },
@@ -131,7 +131,7 @@ const STORY = {
         { who: 'nar',  text: 'Confete no ar, orquestra afinando: o frevo ferve na rua!' },
         { who: 'maju', text: 'A concha tá girando no meio das sombrinhas coloridas!' },
         { who: 'vovo', text: 'O frevo nasceu aqui, Maju. Vem de "ferver". O passista dança com a sombrinha aberta.' },
-        { who: 'maju', text: 'As sombrinhas dançam em sequência. Se eu adivinhar a próxima, entro na roda e pego a conta!' },
+        { who: 'maju', text: 'As sombrinhas dançam em sequência. Se eu adivinhar a próxima, entro na roda e pego a concha!' },
       ],
       outro: [
         { who: 'nar',  text: 'Maju acerta o passo, abre a sombrinha e a roda inteira aplaude.' },
@@ -146,7 +146,7 @@ const STORY = {
         { who: 'nar',  text: 'No crepúsculo, uma antena parabólica enfiada na lama capta o som da cidade.' },
         { who: 'maju', text: 'Que símbolo é esse, vovô? Uma antena... no mangue?' },
         { who: 'vovo', text: 'É o manguebeat! Chico Science misturou o tambor do maracatu com a guitarra do mundo.' },
-        { who: 'vovo', text: '"Caranguejos com cérebro": o mangue antenado com o planeta. A conta tá no som certo.' },
+        { who: 'vovo', text: '"Caranguejos com cérebro": o mangue antenado com o planeta. A concha tá no som certo.' },
         { who: 'maju', text: 'Vou equalizar a antena até a cidade e o mangue tocarem juntos!' },
       ],
       outro: [
@@ -160,7 +160,7 @@ const STORY = {
       beadName: 'Conta do Poente', beadColor: '#8a3a8a',
       intro: [
         { who: 'nar',  text: 'O céu pega fogo laranja e roxo. As jangadas esperam a última maré do dia.' },
-        { who: 'vovo', text: 'Chegou a hora, Maju. A última conta tá na boia do canal, no caminho da jangada.' },
+        { who: 'vovo', text: 'Chegou a hora, Maju. A última concha tá na boia do canal, no caminho da jangada.' },
         { who: 'maju', text: 'Os pescadores leem o vento e as correntes... agora é minha vez!' },
         { who: 'vovo', text: 'Trace a rota com cuidado: pedra de arrecife não perdoa casco de jangada.' },
         { who: 'maju', text: 'Vou marcar o caminho todo antes de soltar a vela. Confia, vovô!' },
@@ -195,16 +195,16 @@ STORY.meet = {
   start: [
     { who: 'jona', text: 'Maju! Que bom que chegou! Bem-vinda ao Recife Antigo, filha!' },
     { who: 'mica', text: 'Por aqui tudo começou — a cidade, as histórias, a nossa família.' },
-    { who: 'jona', text: 'Mas aconteceu algo hoje. O vovô Chico perdeu o colar das marés.' },
+    { who: 'jona', text: 'Mas aconteceu algo hoje. O vovô Maro perdeu o colar das marés.' },
     { who: 'maju', text: 'O colar do vovô? O que guarda as histórias do Recife?' },
     { who: 'mica', text: 'Esse mesmo. Trinta e uma conchas espalhadas pela cidade inteira!' },
     { who: 'jona', text: 'Hoje ele parte com os jangadeiros. Precisa do colar inteiro antes do pôr do sol.' },
     { who: 'maju', text: 'Então eu vou atrás delas! Por onde começo?' },
     { who: 'jona', text: 'Por aqui mesmo! Usa o direcional pra caminhar. Vai, experimenta!' },
-    { who: 'mica', text: 'As conchas aparecem como plaquinhas. Chega perto de uma e toca em ENTRAR.' },
+    { who: 'mica', text: 'As conchas brilham douradas pelo mapa. Chega perto de uma e toca em ENTRAR.' },
     { who: 'jona', text: 'Cada bairro tem suas conchas. Completa todas e a ponte pro próximo bairro se abre pra ti.' },
     { who: 'mica', text: 'A família toda tá espalhada pela cidade — teu titio, tua vó, tua vovó Maria...' },
-    { who: 'jona', text: 'E o vovô Chico te espera lá no cais, contando os minutos.' },
+    { who: 'jona', text: 'E o vovô Maro te espera lá no cais, contando os minutos.' },
     { who: 'maju', text: 'Esse colar volta inteirinho. Eu prometo!' },
     { who: 'nar',  text: 'Jonatha e Micaele acenam até Maju virar a esquina. O Recife começa a se abrir diante dela.' },
   ],
@@ -294,7 +294,7 @@ STORY.meet = {
   ],
   renatoAgain: [
     { who: 'renato', text: 'Lembra, Maju: fé não é ausência de medo. É seguir em frente mesmo com ele.' },
-    { who: 'maju',   text: 'Eu lembro, titio! Cada conta que acho é uma promessa cumprida.' },
+    { who: 'maju',   text: 'Eu lembro, titio! Cada concha que acho é uma promessa cumprida.' },
     { who: 'renato', text: 'Isso mesmo, sobrinha. O Padrinho Padre Cícero estaria orgulhoso de ti.' },
   ],
 
