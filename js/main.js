@@ -120,7 +120,9 @@
   // não por caminho. A chave genérica antiga colidia com saves de outros builds/projetos.
   const SAVE_KEY = 'maresRecife:pernambuco-meu-pais';
   const LEGACY_SAVE_KEY = 'maresRecife';
-  const EMPTY_SAVE = { v: 3, done: {}, opened: false, fin: false, maju: null, met: {}, briefed: false };
+  // Fábrica (não constante): cada chamada retorna objetos `done`/`met` próprios, para que o
+  // fallback de load() nunca compartilhe referência mutável entre saves.
+  function emptySave() { return { v: 3, done: {}, opened: false, fin: false, maju: null, met: {}, briefed: false }; }
 
   // Parseia um save cru (string do localStorage) aplicando a migração v2→v3.
   // Defensivo: JSON inválido / ausente → save vazio. Reusado por load() e pela adoção do legado.
@@ -139,11 +141,11 @@
       const done = {};
       for (let i = 1; i <= Math.min(prog, TOTAL_PHASES); i++) done[i] = true;
       return { v: 3, done, opened: !!s.opened, fin: prog >= TOTAL_PHASES, maju: null, met: {}, briefed: !!s.opened };
-    } catch { return { ...EMPTY_SAVE }; }
+    } catch { return emptySave(); }
   }
   function load() {
     try { return parseSave(localStorage.getItem(SAVE_KEY)); }
-    catch { return { ...EMPTY_SAVE }; }
+    catch { return emptySave(); }
   }
   function hasNamespacedSave() { try { return localStorage.getItem(SAVE_KEY) != null; } catch { return false; } }
   // Save legado da origem (chave antiga). Pode ser de um build deste jogo OU de outro projeto
@@ -213,13 +215,16 @@
   };
   const TRANS = 0.34;
 
-  buildSpots();
-  {
+  // posiciona a Maju a partir do save (posição salva ou início do distrito 0)
+  function placeMaju() {
     const c = districtCenter(0);
     const sv = S.save.maju;
     S.maju.x = sv ? sv.x : c.x;
     S.maju.y = sv ? sv.y : c.y + 70;
   }
+
+  buildSpots();
+  placeMaju();
 
   // Recuperação de legado: sem save namespeado mas há um save antigo com progresso na origem
   // → pergunta ao jogador (card) em vez de adotar silenciosamente (evita o "save fantasma").
@@ -401,15 +406,15 @@
     pTxt(ctx, 'PROGRESSO ENCONTRADO', W / 2, 238, 18, '#f2c038');
     pTxt(ctx, 'Achamos um jogo salvo', W / 2, 282, 13, '#bfe6f2', 'center', false);
     pTxt(ctx, 'neste navegador.', W / 2, 302, 13, '#bfe6f2', 'center', false);
-    pTxt(ctx, `${n}/${TOTAL_PHASES} conchas`, W / 2, 332, 16, '#9fd8f0');
-    // botão Continuar (dourado)
+    pTxt(ctx, `${n}/${TOTAL_PHASES} conchas`, W / 2, 332, 16, '#bfe6f2');   // --azul-mar
+    // botão Continuar (dourado) — fundo de painel + borda --ouro (default do panel)
     const b1 = LEGACY_BTN_CONT;
-    panel(ctx, b1.x, b1.y, b1.w, b1.h, 'rgba(40,32,12,0.95)', '#f2c038');
-    pTxt(ctx, 'CONTINUAR DE ONDE PAREI', b1.x + b1.w / 2, b1.y + b1.h / 2, 13, '#fff8d0');
-    // botão Começar do zero (discreto)
+    panel(ctx, b1.x, b1.y, b1.w, b1.h, 'rgba(8,14,26,0.92)', '#f2c038');
+    pTxt(ctx, 'CONTINUAR DE ONDE PAREI', b1.x + b1.w / 2, b1.y + b1.h / 2, 13, '#fff8d0');   // --creme-claro
+    // botão Começar do zero (discreto) — borda/texto --cinza-nevoa
     const b2 = LEGACY_BTN_FRESH;
-    panel(ctx, b2.x, b2.y, b2.w, b2.h, 'rgba(20,26,40,0.95)', '#5a6a84');
-    pTxt(ctx, 'COMEÇAR DO ZERO', b2.x + b2.w / 2, b2.y + b2.h / 2, 13, '#cdd8e8');
+    panel(ctx, b2.x, b2.y, b2.w, b2.h, 'rgba(8,14,26,0.92)', '#5a6b7a');
+    pTxt(ctx, 'COMEÇAR DO ZERO', b2.x + b2.w / 2, b2.y + b2.h / 2, 13, '#9fb4d0');   // --cinza-nevoa
   }
 
   // Adota o save legado: valida (já parseado em readLegacy) e grava na chave namespeada.
@@ -417,10 +422,7 @@
     if (S.legacy) S.save = S.legacy.save;
     S.legacy = null;
     save();
-    const c = districtCenter(0);
-    const sv = S.save.maju;
-    S.maju.x = sv ? sv.x : c.x;
-    S.maju.y = sv ? sv.y : c.y + 70;
+    placeMaju();
     S.mode = 'title';
   }
   // Descarta o legado: remove a chave antiga (não pergunta de novo) e começa limpo.

@@ -168,6 +168,15 @@ const sv11 = JSON.stringify({ v: 3, done: { 1:1,2:1,3:1,4:1,5:1,6:1,7:1,8:1,9:1,
   check('Legado vazio (0 conchas): mode=title', empty.S.mode === 'title', empty.S.mode);
 }
 
+// --- Regressão (code-review): fallback de load() não compartilha referência mutável ---
+{
+  // dois carregamentos com storage bloqueado caem no emptySave(); mutar um não vaza no outro
+  const a = loadGame({ blockStorage: true });
+  a.S.save.done[7] = true;
+  const b = loadGame({ blockStorage: true });
+  check('Fallback: saves independentes (sem referência compartilhada)', Object.keys(b.S.save.done).length === 0, Object.keys(b.S.save.done).length);
+}
+
 // --- Edge: localStorage indisponível não quebra o carregamento ---
 {
   const g = loadGame({ blockStorage: true });
