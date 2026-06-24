@@ -1,0 +1,24 @@
+stateDiagram-v2
+    [*] --> Intro: jogo novo
+    Intro --> MundoLivre: sonho concluído (startTutorial → enterWorld)
+
+    state "Mundo livre (Fase 2 — onboarding)" as MundoLivre {
+        [*] --> AguardaMicaele
+
+        AguardaMicaele: !met.mica\nguia → Micaele\nENTRAR concha travado
+        AguardaJonatha: met.mica && !briefed\nguia → Jonatha\nENTRAR concha travado
+        Briefed: briefed\nseta dourada → concha\nENTRAR liberado
+
+        AguardaMicaele --> AguardaMicaele: tenta falar Jonatha\n→ desvio "fala com tua mãe"
+        AguardaMicaele --> AguardaMicaele: toca ENTRAR concha\n→ toast "fala com teus pais"
+        AguardaMicaele --> AguardaJonatha: FALAR Micaele\n(welcome) met.mica=true
+
+        AguardaJonatha --> AguardaJonatha: toca ENTRAR concha\n→ toast "fala com teus pais"
+        AguardaJonatha --> Briefed: FALAR Jonatha\n(missão) briefed=true
+
+        Briefed --> Briefed: FALAR Micaele/Jonatha\n→ motivadora (Again)
+        Briefed --> ResolverConcha: ENTRAR concha ativa
+    }
+
+    ResolverConcha --> MundoLivre: concha concluída (done[g]=true)
+    Briefed --> [*]: 31 conchas + Vovô Maro → desfecho

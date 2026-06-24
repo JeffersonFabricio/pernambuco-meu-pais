@@ -780,8 +780,17 @@
   }
 
   function enterNear() {
+    if (S.mode !== 'world') return;   // guard: ignora toques/teclas duplicados durante a transição
     if (S.nearNpc) { AudioFX.ok(); talkNpc(S.nearNpc); return; }
-    if (S.near) { AudioFX.ok(); saveMaju(); openLevel(S.near.g); }
+    if (S.near) {
+      // Gate da Fase 2: a cidade (entrar nas conchas) só abre depois de falar com o Jonatha.
+      if (!S.save.briefed) {
+        AudioFX.tap();
+        S.toast = { text: 'Fale com a mainha e o painho primeiro, filha.', t: 4.5 };
+        return;
+      }
+      AudioFX.ok(); saveMaju(); openLevel(S.near.g);
+    }
   }
   function saveMaju() {
     S.save.maju = { x: Math.round(S.maju.x), y: Math.round(S.maju.y) };
@@ -789,34 +798,47 @@
   }
   function talkNpc(npc) {
     if (npc.ending && doneCount() >= TOTAL_PHASES) { startEnding(); return; }
-    // Pais: a 1ª fala (boas-vindas / missão) toca enquanto a missão não foi explicada;
-    // os demais NPCs usam "já conheci" (met).
-    const isParent = npc.key === 'jona' || npc.key === 'mica';
-    const first = isParent ? !S.save.briefed : !S.save.met[npc.key];
-    S.save.met[npc.key] = true; save();
-    let lines;
+
+    // Vovô Maro: progresso dinâmico no cais (caso especial).
     if (npc.key === 'vovo') {
-      lines = [
+      S.save.met.vovo = true; save();
+      startDialogue([
         { who: 'vovo', text: `Já são ${doneCount()} de ${TOTAL_PHASES} contas, minha neta. Falta pouco pro colar voltar inteiro.` },
         { who: 'maju', text: 'Tô quase lá, vovô! Não vou deixar o sol se pôr antes.' },
-      ];
-    } else {
-      const key = first ? npc.key : npc.key + 'Again';
-      // fallback robusto: se a chave não existir, nunca passa undefined pro diálogo.
-      lines = STORY.meet[key] || STORY.meet[npc.key + 'Again'] || STORY.meet[npc.key] || STORY.meet.start;
+      ], CHAPTERS[npc.d].scene, () => enterWorld());
+      return;
     }
+
+    // Onboarding gated (Fase 2): a Micaele recebe → o Jonatha explica a missão → cidade liberada.
+    // Ordem obrigatória: falar com o pai antes da mãe só rende um desvio (não marca met nem briefed).
+    if (npc.key === 'jona' && !S.save.briefed && !S.save.met.mica) {
+      startDialogue(STORY.meet.jonaBlocked, CHAPTERS[npc.d].scene, () => enterWorld());
+      return;
+    }
+
+    // 1ª conversa "de conteúdo": Micaele usa met.mica; Jonatha usa briefed; demais usam met[key].
+    const first = npc.key === 'mica' ? !S.save.met.mica
+                : npc.key === 'jona' ? !S.save.briefed
+                : !S.save.met[npc.key];
+    const key = first ? npc.key : npc.key + 'Again';
+    // fallback robusto: se a chave não existir, nunca passa undefined pro diálogo.
+    const lines = STORY.meet[key] || STORY.meet[npc.key + 'Again'] || STORY.meet[npc.key] || STORY.meet.start;
     if (!lines?.length) return; // segurança extra: sem falas, não trava a tela
+
     startDialogue(lines, CHAPTERS[npc.d].scene, () => {
       enterWorld();
+      // marca "já conheci" só ao concluir o diálogo correto (nunca no desvio).
+      S.save.met[npc.key] = true;
       if (first && npc.lesson) {
         S.toast = { text: '✦ Lição aprendida', sub: npc.lesson, t: 5.5, color: '#f2c038', bg: 'rgba(20,12,4,0.94)', textColor: '#f2c038' };
       }
-      // Jonatha explica a missão: libera a seta dourada até as conchas
-      if (first && npc.key === 'jona' && !S.save.briefed) {
-        S.save.briefed = true; save();
+      // Jonatha (depois da Micaele) explica a missão: libera a entrada nas conchas + seta dourada.
+      if (first && npc.key === 'jona') {
+        S.save.briefed = true;
         triggerBeaconAndPan(18);
         S.toast = { text: 'Siga a seta dourada até a primeira concha', t: 4.5 };
       }
+      save();
     });
   }
 
@@ -1007,7 +1029,8 @@
     }
     if (!S.save.briefed && !S.toast) {
       ctx.save(); ctx.globalAlpha = 0.6 + 0.4 * Math.abs(Math.sin(t * 2));
-      pTxt(ctx, 'Fale com a mainha e o painho', W / 2, H - 150, 12, '#fff8d0');
+      pTxt(ctx, !S.save.met.mica ? 'Vá falar com a mainha primeiro' : 'Agora vá falar com o painho',
+        W / 2, H - 150, 12, '#fff8d0');
       pTxt(ctx, 'Chegue perto e toque em ★ FALAR.', W / 2, H - 132, 11, '#fff8d0');
       ctx.restore();
     } else if (S.helpT > 0 && !S.toast) {
@@ -1017,6 +1040,7 @@
       ctx.restore();
     }
     drawBeacon(S.t);
+    drawOnboardingGuide(S.t);
   }
 
   // etiqueta do bairro atual + progresso, fixa no canto superior esquerdo
@@ -1038,24 +1062,16 @@
     pTxt(ctx, prog, 18 + nameW + 8, 66, 11, complete ? '#88ee88' : '#bfe6f2', 'left');
   }
 
-  // seta dourada — guia persistente apontando para o portal do bairro da próxima conta
-  function drawBeacon(t) {
-    if (!S.save.briefed) return;                 // missão ainda não explicada: sem seta
-    const target = nextUndoneAnywhere();
-    if (!target) return;                         // tudo concluído: sem guia
-    const pos = World3D.nodeScreen(target.g);    // posição de tela do nó da próxima concha (iso)
-    if (!pos) return;
+  // seta dourada genérica: pulsa acima do alvo se visível, ou aponta da borda se fora da tela
+  function drawGuideArrow(tx, ty, t, label) {
     const alpha = 0.72 + 0.22 * Math.sin(t * 4);
-    const tx = pos.x, ty = pos.y;
     ctx.save();
     ctx.globalAlpha = alpha;
     if (tx >= 24 && tx <= W - 24 && ty >= 60 && ty <= H - 120) {
-      // alvo visível: seta pulsante acima do portal
       const ay = ty - 50 - Math.abs(Math.sin(t * 3.5)) * 10;
       pTxt(ctx, '▼', tx, ay, 22, '#f2c038');
-      pTxt(ctx, 'vá aqui', tx, ay - 20, 9, '#f2c038', 'center', false);
+      if (label) pTxt(ctx, label, tx, ay - 20, 9, '#f2c038', 'center', false);
     } else {
-      // alvo fora da tela: seta na borda indicando direção
       const angle = Math.atan2(ty - H / 2, tx - W / 2);
       const ex = Math.max(28, Math.min(W - 28, W / 2 + Math.cos(angle) * 148));
       const ey = Math.max(64, Math.min(H - 108, H / 2 + Math.sin(angle) * 240));
@@ -1064,6 +1080,24 @@
       pTxt(ctx, '▲', 0, 0, 20, '#f2c038');
     }
     ctx.restore();
+  }
+
+  // seta dourada — guia persistente apontando para o portal do bairro da próxima conta
+  function drawBeacon(t) {
+    if (!S.save.briefed) return;                 // missão ainda não explicada: sem seta
+    const target = nextUndoneAnywhere();
+    if (!target) return;                         // tudo concluído: sem guia
+    const pos = World3D.nodeScreen(target.g);    // posição de tela do nó da próxima concha (iso)
+    if (!pos) return;
+    drawGuideArrow(pos.x, pos.y, t, 'vá aqui');
+  }
+
+  // guia de onboarding (Fase 2) — aponta pra Micaele e, depois dela, pro Jonatha (até briefed)
+  function drawOnboardingGuide(t) {
+    if (S.save.briefed) return;
+    const npc = NPCS.find(n => n.key === (!S.save.met.mica ? 'mica' : 'jona'));
+    if (!npc || !districtUnlocked(npc.d)) return;
+    drawGuideArrow(npc.x - S.cam.x, npc.y - S.cam.y, t, !S.save.met.mica ? 'a mainha' : 'o painho');
   }
 
   function drawMinimap() {
@@ -1131,8 +1165,9 @@
   window.addEventListener('keyup', e => { keys[e.key.length === 1 ? e.key.toLowerCase() : e.key] = false; });
 
   function startTutorial() {
-    // Boas-vindas dos pais (cutscene); a missão é explicada quando ela falar com eles no mundo.
-    startDialogue(STORY.meet.welcome, CHAPTERS[0].scene, () => { enterWorld(); });
+    // Fase 2: o mundo nasce já em modo livre; a guia dourada aponta pra Micaele, que dá as
+    // boas-vindas ao Recife quando a Maju chega perto e toca ★ FALAR.
+    enterWorld();
   }
   function handleTap(x, y) {
     switch (S.mode) {
@@ -1268,5 +1303,9 @@
     reset: () => { try { localStorage.removeItem(SAVE_KEY); } catch {} location.reload(); },
     // re-testar as intros dos pais sem perder progresso: faz a missão voltar a ser "não explicada"
     rebrief: () => { S.save.briefed = false; S.save.met.jona = false; S.save.met.mica = false; save(); return 'briefed=false; fale com a Micaele e o Jonatha de novo'; },
+    // hooks de teste do onboarding (Fase 2): dispara ação como se a Maju estivesse perto do alvo
+    talk: key => { const n = NPCS.find(z => z.key === key); if (!n) return null; S.nearNpc = n; S.near = null; enterNear(); return S.mode; },
+    tryEnter: g => { const s = SPOTS.find(z => z.g === g); if (!s) return null; S.near = s; S.nearNpc = null; enterNear(); return S.mode; },
+    finish: () => { let n = 0; while (S.mode === 'dialogue' && n++ < 300) dlgTap(); return S.mode; },
   };
 })();

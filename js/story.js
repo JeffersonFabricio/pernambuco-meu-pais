@@ -208,17 +208,27 @@ STORY.meet = {
     { who: 'maju', text: 'Esse colar volta inteirinho. Eu prometo!' },
     { who: 'nar',  text: 'Jonatha e Micaele acenam até Maju virar a esquina. O Recife começa a se abrir diante dela.' },
   ],
-  // Boas-vindas: o mundo nasce e os pais recebem a Maju antes de virarem NPCs
-  welcome: [
-    { who: 'nar',  text: 'O sonho ganha forma: o Recife Antigo nasce diante da Maju.' },
-    { who: 'jona', text: 'Maju! Que bom que chegou, filha! Bem-vinda ao Recife Antigo!' },
-    { who: 'mica', text: 'Foi por aqui que tudo começou — a cidade, as histórias, a nossa família.' },
-    { who: 'maju', text: 'Mainha! Painho! Que cidade linda é essa toda?' },
-    { who: 'jona', text: 'É o Recife, no teu sonho mais bonito. E hoje ele precisa de ti.' },
-    { who: 'mica', text: 'A gente fica por aqui, meu amor. Vem falar com a gente.' },
-    { who: 'nar',  text: 'Fale com a Micaele e, depois, com o Jonatha.' },
+  // Boas-vindas ao Recife — primeira conversa com a Micaele (recebe a Maju e encaminha pro painho)
+  mica: [
+    { who: 'mica', text: 'Maju! Que bom que chegou, minha filha! Bem-vinda ao Recife!' },
+    { who: 'maju', text: 'Mainha! Que cidade linda é essa toda?' },
+    { who: 'mica', text: 'É o Recife do teu sonho mais bonito. Foi aqui que a nossa história começou.' },
+    { who: 'mica', text: 'E hoje ele precisa de ti, meu amor — aconteceu uma coisa com o colar do vovô.' },
+    { who: 'maju', text: 'O colar do vovô Maro? O que foi que aconteceu?' },
+    { who: 'mica', text: 'Vai falar com o teu painho ali, que ele te explica tudo direitinho.' },
+    { who: 'maju', text: 'Tô indo, mainha!' },
   ],
-  // Primeira conversa com o pai — ele explica a missão do colar (libera a seta)
+  // Reencontro com a mãe — mensagem motivadora curta
+  micaAgain: [
+    { who: 'mica', text: 'Eu sei que tu consegue, minha filha. Vai com o coração que as conchas voltam!' },
+    { who: 'maju', text: 'Vou sim, mainha! Já já volto pra te dar um abraço.' },
+  ],
+  // Desvio: tentar falar com o pai antes da mãe — não explica a missão
+  jonaBlocked: [
+    { who: 'jona', text: 'Opa, minha menina! Antes de tudo, vai dar um alô na tua mãe ali, viu?' },
+    { who: 'maju', text: 'Tá bom, painho! Já volto.' },
+  ],
+  // Primeira conversa com o pai (após a Micaele) — explica a missão do colar (libera a seta)
   jona: [
     { who: 'jona', text: 'Maju! Que orgulho ver minha menina aqui!' },
     { who: 'jona', text: 'Aconteceu uma coisa hoje: o vovô Maro perdeu o colar das marés.' },
@@ -231,22 +241,10 @@ STORY.meet = {
     { who: 'jona', text: 'Segue a seta dourada, filha — e volta logo pro abraço do painho.' },
     { who: 'maju', text: 'Esse colar volta inteirinho. Eu prometo!' },
   ],
+  // Reencontro com o pai — mensagem motivadora curta
   jonaAgain: [
-    { who: 'jona', text: 'Tá indo lindo, filha. Completa as conchas do bairro que a ponte se abre pra ti.' },
+    { who: 'jona', text: 'Tá indo lindo, filha. Eu sei que tu consegue — vai lá e volta logo!' },
     { who: 'maju', text: 'Pode deixar, painho!' },
-    { who: 'jona', text: 'Esse é o jeito da minha menina. Vai com cuidado e volta logo pro abraço do painho.' },
-  ],
-  // Primeira conversa com a mãe (após as boas-vindas) — encaminha pro painho
-  mica: [
-    { who: 'mica', text: 'Deixa a mainha te olhar, minha menina... que sonho lindo a gente tá vivendo.' },
-    { who: 'maju', text: 'Mainha! Mas o que tá acontecendo no Recife?' },
-    { who: 'mica', text: 'Vai falar com o teu painho, meu amor. Ele te explica tudo direitinho.' },
-    { who: 'maju', text: 'Tô indo!' },
-  ],
-  micaAgain: [
-    { who: 'mica', text: 'Devagar com o coração, filha, que a maré não tem pressa. Se te perder, olha o minimapa.' },
-    { who: 'maju', text: 'Tô de olho, mainha! Já já volto pra te dar um abraço.' },
-    { who: 'mica', text: 'Vai, meu amor. Cada concha que tu acha é um pedacinho de amor que se completa.' },
   ],
   // Titio Jeff — praia de Boa Viagem
   jeff: [
