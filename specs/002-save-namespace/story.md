@@ -29,10 +29,10 @@ A correção é **namespacear a chave** para algo único deste deploy, preservan
 
 1. A chave de `localStorage` usada para persistir o save é **`'maresRecife:pernambuco-meu-pais'`** — nenhuma escrita nova ocorre na chave genérica `'maresRecife'`.
 2. Abrir o jogo numa origem **sem save namespeado** resulta em **0/31** — mesmo que exista uma chave legada `'maresRecife'` na mesma origem, ela **não** é adotada automaticamente como progresso herdado, e **não** é apagada (permanece intacta).
-3. Um jogador que tinha progresso na chave legada pode recuperá-lo **sem perda e por ação deliberada**: executando `window.__world.importLegacy()` no console, o save legado é validado e copiado para a chave namespeada e o jogo recarrega com o progresso restaurado.
+3. Um jogador que tinha progresso na chave legada pode recuperá-lo **sem perda e por ação deliberada, dentro do jogo** (auto-suficiente — sem console): ao detectar um save legado numa origem sem save namespeado, o jogo exibe **uma vez** um card "Achamos um progresso salvo (N/31). É seu?" com **[Continuar de onde parei]** e **[Começar do zero]**. "Continuar" valida e adota o legado; "Começar do zero" descarta e parte de 0/31.
 4. `save()` passa a gravar **somente** na chave namespeada; nenhuma escrita nova ocorre na chave legada.
 5. `window.__world.reset()` limpa o save namespeado **e** o legado (se ainda existir) e recarrega em 0/31.
-6. **O progresso nunca regride** (Lei do Domínio §4): `importLegacy()` jamais reduz o progresso atual da chave namespeada.
+6. **O progresso nunca regride** (Lei do Domínio §4): o card só aparece quando não há save namespeado (`hasNamespacedSave()` falso); "Continuar" só adiciona; o legado não é apagado na inicialização.
 
 ## Decisão de escopo
 

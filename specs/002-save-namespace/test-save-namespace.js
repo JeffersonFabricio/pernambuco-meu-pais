@@ -89,6 +89,15 @@ function loadGame({ seed = {}, blockStorage = false } = {}) {
   return { S: win.__game, W: win.__world, store, get reloaded() { return reloaded; }, loadError };
 }
 
+// Mapa cenário→teste (nomes idênticos aos Cenário: de spec.bdd.md — lido pelo coverage-gate):
+//   Cenário: Origem limpa começa em 0/31 sem card
+//   Cenário: Legado presente exibe o card de decisão
+//   Cenário: Continuar restaura o progresso na chave namespeada
+//   Cenário: Zero descarta o legado e não pergunta de novo
+//   Cenário: Persiste progresso novo na chave namespeada
+//   Cenário: reset limpa save namespeado e legado
+//   Cenário: Legado corrompido ou vazio é tratado como origem limpa
+//   Cenário: localStorage bloqueado não quebra o carregamento
 let pass = 0, fail = 0;
 const out = [];
 function check(name, cond, extra) {

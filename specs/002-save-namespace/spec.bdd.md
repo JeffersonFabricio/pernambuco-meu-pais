@@ -18,9 +18,8 @@ comandos no console.
 
 ---
 
-### Scenario: Primeira sessão numa origem limpa começa em 0/31
-
 ```gherkin
+Cenário: Origem limpa começa em 0/31 sem card
 Given que não existe nenhuma chave de save no localStorage da origem
   (nem "maresRecife" nem "maresRecife:pernambuco-meu-pais")
 When o jogo carrega
@@ -38,9 +37,8 @@ Object.keys(window.__game.save.done).length         // → 0
 
 ---
 
-### Scenario: Save legado presente exibe o card de decisão (uma vez)
-
 ```gherkin
+Cenário: Legado presente exibe o card de decisão
 Given que existe "maresRecife" legada com done de 11 conchas (11/31)
   And NÃO existe "maresRecife:pernambuco-meu-pais"
 When o jogo carrega
@@ -61,9 +59,8 @@ localStorage.getItem('maresRecife:pernambuco-meu-pais')  // → null (nada adota
 
 ---
 
-### Scenario: "Continuar de onde parei" restaura o progresso na chave namespeada
-
 ```gherkin
+Cenário: Continuar restaura o progresso na chave namespeada
 Given que o card de legado está visível com 11/31
 When o jogador toca em "Continuar de onde parei"
 Then o save legado é validado e gravado em "maresRecife:pernambuco-meu-pais"
@@ -83,9 +80,8 @@ location.reload(); window.__game.mode                    // → 'title' (card n�
 
 ---
 
-### Scenario: "Começar do zero" descarta o legado e não pergunta de novo
-
 ```gherkin
+Cenário: Zero descarta o legado e não pergunta de novo
 Given que o card de legado está visível com 11/31
 When o jogador toca em "Começar do zero"
 Then a chave legada "maresRecife" é removida do localStorage
@@ -104,9 +100,8 @@ location.reload(); window.__game.mode                    // → 'title' (card n�
 
 ---
 
-### Scenario: Progresso novo persiste e recarrega na chave namespeada
-
 ```gherkin
+Cenário: Persiste progresso novo na chave namespeada
 Given uma origem limpa e o jogo em 0/31 na tela de título
 When o jogador completa o distrito 0 (done de 4 conchas) e o jogo salva
   And a página é recarregada
@@ -127,9 +122,8 @@ JSON.parse(localStorage.getItem('maresRecife:pernambuco-meu-pais')).done  // 4 c
 
 ---
 
-### Scenario: reset() limpa save namespeado E legado
-
 ```gherkin
+Cenário: reset limpa save namespeado e legado
 Given que existem ambas as chaves no localStorage (namespeada com progresso E "maresRecife" legada)
 When o jogador executa window.__world.reset()
 Then a chave "maresRecife:pernambuco-meu-pais" é removida
@@ -149,9 +143,8 @@ Object.keys(window.__game.save.done).length                  // → 0
 
 ---
 
-### Scenario (edge): legado ilegível ou vazio é tratado como origem limpa
-
 ```gherkin
+Cenário: Legado corrompido ou vazio é tratado como origem limpa
 Given que existe "maresRecife" com conteúdo "{{CORROMPIDO}}" (JSON inválido)
   OU "maresRecife" com done vazio (0 conchas)
   And NÃO existe a chave namespeada
@@ -171,9 +164,8 @@ window.__game.mode            // → 'title'  (não 'legacy')
 
 ---
 
-### Scenario (edge): localStorage indisponível não quebra o carregamento
-
 ```gherkin
+Cenário: localStorage bloqueado não quebra o carregamento
 Given que localStorage lança ao ser acessado (modo privado restrito / quota)
 When o jogo carrega
 Then o load cai no default defensivo (0/31), modo "title", sem card
