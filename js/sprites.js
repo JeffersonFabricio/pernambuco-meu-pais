@@ -315,6 +315,44 @@ function drawPais(ctx, x, y, s = U) {
   drawMap(ctx, MICA_MAP, MICA_PAL, x + Math.round(s * 4), y, s);
 }
 
+// Igreja das Marias: torre branca com sino dourado + as duas avós lado a lado.
+// Usado pela cena de reencontro (gate met.vova && met.vovoMae) — sem asset externo (Lei §5).
+function drawIgrejaMarias(ctx, x, y, s = 2) {
+  // --- fachada da igreja ---
+  const W = Math.round(22 * s);
+  const H = Math.round(28 * s);
+  // corpo principal (branco colonial)
+  PR(ctx, x, y + Math.round(10 * s), W, H, '#f5efe0');
+  // platibanda/cornija dourada
+  PR(ctx, x - Math.round(s), y + Math.round(9 * s), W + Math.round(2 * s), Math.round(2 * s), '#d9b25c');
+  // janelas laterais
+  PR(ctx, x + Math.round(2 * s), y + Math.round(14 * s), Math.round(5 * s), Math.round(7 * s), '#2a3a4f');
+  PR(ctx, x + Math.round(2 * s), y + Math.round(14 * s), Math.round(2 * s), Math.round(3 * s), '#4a6a8f'); // brilho
+  PR(ctx, x + Math.round(15 * s), y + Math.round(14 * s), Math.round(5 * s), Math.round(7 * s), '#2a3a4f');
+  PR(ctx, x + Math.round(15 * s), y + Math.round(14 * s), Math.round(2 * s), Math.round(3 * s), '#4a6a8f');
+  // porta central
+  PR(ctx, x + Math.round(8 * s), y + Math.round(27 * s), Math.round(6 * s), Math.round(11 * s), '#5a3a22');
+  PR(ctx, x + Math.round(9 * s), y + Math.round(28 * s), Math.round(4 * s), Math.round(9 * s), '#37261a');
+  // --- torre (acima do corpo, centrada) ---
+  const tx = x + Math.round(7 * s);
+  const tw = Math.round(8 * s);
+  PR(ctx, tx, y - Math.round(16 * s), tw, Math.round(26 * s), '#f5efe0');
+  // cornija da torre
+  PR(ctx, tx - Math.round(s), y - Math.round(17 * s), tw + Math.round(2 * s), Math.round(2 * s), '#d9b25c');
+  // janela do sino (abertura escura + arco)
+  PR(ctx, tx + Math.round(2 * s), y - Math.round(10 * s), Math.round(4 * s), Math.round(5 * s), '#2a3a4f');
+  // sino dourado
+  PR(ctx, tx + Math.round(2.5 * s), y - Math.round(7 * s), Math.round(3 * s), Math.round(3 * s), '#d9b25c');
+  // espadana/agulha
+  PR(ctx, tx + Math.round(3 * s), y - Math.round(24 * s), Math.round(2 * s), Math.round(9 * s), '#f5efe0');
+  PR(ctx, tx + Math.round(3.5 * s), y - Math.round(27 * s), Math.round(s), Math.round(4 * s), '#d9b25c');
+  // --- as duas avós lado a lado, abaixo da fachada ---
+  // vovó Maria José (vova) à esquerda
+  drawVova(ctx, x - Math.round(s * 2), y + Math.round(38 * s), s);
+  // vovó Maria Rita (vovoMae, do céu) à direita — com halo
+  drawVovoMae(ctx, x + Math.round(12 * s), y + Math.round(38 * s), s);
+}
+
 function drawCrab(ctx, x, y, s = U) { drawMap(ctx, CRAB_MAP, CRAB_PAL, x, y, s); }
 function drawShark(ctx, x, y, s = U, flip = false) {
   if (flip) {

@@ -858,6 +858,25 @@
   function talkNpc(npc) {
     if (npc.ending && doneCount() >= TOTAL_PHASES) { startEnding(); return; }
 
+    // Igreja das Marias — gate narrativo: a cena cheia só abre depois de conhecer as duas
+    // avós (met.vova && met.vovoMae). Antes disso, dica genérica sem revelar qual avó falta
+    // (ADR-003). Não incrementa fase — é cena, não concha.
+    if (npc.key === 'asMarias') {
+      const jaViu = !!S.save.met.asMarias;
+      if (!S.save.met.vova || !S.save.met.vovoMae) {
+        S.toast = { text: 'Ainda não é o momento...', t: 3.5, color: '#d9b25c', bg: 'rgba(20,14,4,0.92)', textColor: '#d9b25c' };
+        return;
+      }
+      const lines = STORY.meet[jaViu ? 'asMariasAgain' : 'asMarias'] || STORY.meet.asMarias;
+      if (!lines?.length) return;
+      startDialogue(lines, 7, () => {
+        enterWorld();
+        S.save.met.asMarias = true;
+        save();
+      });
+      return;
+    }
+
     // Vovô Maro: progresso dinâmico no cais (caso especial).
     if (npc.key === 'vovo') {
       S.save.met.vovo = true; save();
@@ -1355,6 +1374,7 @@
 
   // ---------- depuração / testes ----------
   window.__game = S;
+  window.__story = STORY;   // expõe os diálogos para validação headless (spec 004)
   window.__openLevel = openLevel;
   window.__tap = (x, y) => handleTap(x, y);
   window.__world = {
@@ -1375,8 +1395,13 @@
     tapAt: (x, y) => handleTap(x, y),
     // re-testar as intros dos pais sem perder progresso: faz a missão voltar a ser "não explicada"
     rebrief: () => { S.save.briefed = false; S.save.met.jona = false; S.save.met.mica = false; save(); return 'briefed=false; fale com a Micaele e o Jonatha de novo'; },
-    // hooks de teste do onboarding (Fase 2): dispara ação como se a Maju estivesse perto do alvo
-    talk: key => { const n = NPCS.find(z => z.key === key); if (!n) return null; S.nearNpc = n; S.near = null; enterNear(); return S.mode; },
+    // hooks de teste do onboarding (Fase 2): dispara ação como se a Maju estivesse perto do alvo.
+    // Busca em NPCS; se não achar, em World3D.worldNpcs (cenas especiais como asMarias — spec 004).
+    talk: key => {
+      const n = NPCS.find(z => z.key === key) || World3D.worldNpcs.find(z => z.key === key) || null;
+      if (!n) return null;
+      S.nearNpc = n; S.near = null; enterNear(); return S.mode;
+    },
     tryEnter: g => { const s = SPOTS.find(z => z.g === g); if (!s) return null; S.near = s; S.nearNpc = null; enterNear(); return S.mode; },
     finish: () => { let n = 0; while (S.mode === 'dialogue' && n++ < 300) dlgTap(); return S.mode; },
   };

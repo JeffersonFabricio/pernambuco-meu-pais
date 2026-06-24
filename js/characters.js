@@ -47,6 +47,11 @@ const CHARACTERS = {
              free: { dx: 0, dy: -176 }, world: { col: 3, row: 16 } },
   vovoMae: { name: 'VOVÓ MARIA',    color: '#f0d878', draw: drawVovoMae, d: 7, lesson: LESSONS.amorCeu,
              free: { dx: 0, dy: -176 }, world: { col: 9, row: 16 } },
+  // Igreja das Marias — cena de reencontro na fronteira d6↔d7 (gate met.vova && met.vovoMae,
+  // verificado em main.js/talkNpc). Só `world` (sem `free`): aparece no passeio, não no mundo
+  // livre. NÃO é concha — fora de PHASE_NODES (FF-DOM-2, TOTAL_PHASES=31).
+  asMarias: { name: 'IGREJA',       color: '#d9b25c', draw: drawIgrejaMarias, d: 6, scene: true,
+             world: { col: 6, row: 16, label: 'IGREJA' } },
   // Pais juntos no Cais da Alfândega (d8) — reencontro afetivo, sem ending, sem concha.
   osPais:  { name: 'PAINHO E MAINHA', color: '#3fae7a', draw: drawPais, d: 8,
              lesson: 'Coragem do painho e fé da mainha caminham com você.',

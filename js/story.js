@@ -384,6 +384,28 @@ STORY.meet = {
     { who: 'jona', text: 'Coragem e fé, Maju. Já já tu volta com o colar inteiro.' },
     { who: 'maju', text: 'Já tô indo! Amo vocês!' },
   ],
+
+  // Reencontro das duas Marias na igreja — cena cheia (gate: met.vova && met.vovoMae)
+  asMarias: [
+    { who: 'nar',     text: 'Na fronteira do mangue e da Rua da Moeda, uma igrejinha branca guarda um silêncio dourado.' },
+    { who: 'maju',    text: 'Que paz é essa aqui dentro...' },
+    { who: 'vova',    text: 'Maju! Que bom que vieste, minha netinha.' },
+    { who: 'vovoMae', text: 'Eu sabia que tu ia chegar até aqui, meu amor.' },
+    { who: 'maju',    text: 'Vovó! As duas... juntas? Mas como?' },
+    { who: 'vova',    text: 'Quando o amor é grande, a distância some. Nem o céu separa o que é da família.' },
+    { who: 'vovoMae', text: 'As Marias dessa família sempre se encontram de algum jeito, Maju.' },
+    { who: 'maju',    text: 'Maria... o nome que vocês duas carregam. E a mainha também carrega no coração.' },
+    { who: 'vova',    text: 'É um fio que passa de geração em geração, minha neta. Ternura, força e fé.' },
+    { who: 'vovoMae', text: 'E esse fio também é teu, Maju. Você é feita do amor das duas Marias.' },
+    { who: 'maju',    text: 'Nunca vou esquecer isso. Nunca.' },
+    { who: 'nar',     text: 'A luz da tarde entra pelas janelas e envolve as três num abraço dourado.' },
+  ],
+  // Reencontro já visto — fala curta
+  asMariasAgain: [
+    { who: 'vova',    text: 'Estamos aqui, Maju. As Marias da tua família, sempre juntas.' },
+    { who: 'vovoMae', text: 'O amor que nos une não tem fim. Vai com força, meu amor.' },
+    { who: 'maju',    text: 'Amo vocês, minhas Marias.' },
+  ],
 };
 
 // Final: o Vovô leva a Maju pelo céu do Recife
