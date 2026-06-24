@@ -115,10 +115,18 @@
   };
 
   // ---------- save (v3: done = fases concluídas; met = quem já conheci) ----------
-  const SAVE_KEY = 'maresRecife';
-  function load() {
+  // Chave namespeada por deploy: GitHub Pages de usuário compartilha UMA origem
+  // (jeffersonfabricio.github.io) entre todos os repos; localStorage particiona por origem,
+  // não por caminho. A chave genérica antiga colidia com saves de outros builds/projetos.
+  const SAVE_KEY = 'maresRecife:pernambuco-meu-pais';
+  const LEGACY_SAVE_KEY = 'maresRecife';
+  const EMPTY_SAVE = { v: 3, done: {}, opened: false, fin: false, maju: null, met: {}, briefed: false };
+
+  // Parseia um save cru (string do localStorage) aplicando a migração v2→v3.
+  // Defensivo: JSON inválido / ausente → save vazio. Reusado por load() e pela adoção do legado.
+  function parseSave(raw) {
     try {
-      const s = JSON.parse(localStorage.getItem(SAVE_KEY)) || {};
+      const s = JSON.parse(raw) || {};
       if (s.v === 3) {
         // briefed: missão já explicada → libera a seta dourada.
         // Migração: quem já conheceu os dois pais (tutorial antigo) ou já tem progresso.
@@ -131,7 +139,22 @@
       const done = {};
       for (let i = 1; i <= Math.min(prog, TOTAL_PHASES); i++) done[i] = true;
       return { v: 3, done, opened: !!s.opened, fin: prog >= TOTAL_PHASES, maju: null, met: {}, briefed: !!s.opened };
-    } catch { return { v: 3, done: {}, opened: false, fin: false, maju: null, met: {}, briefed: false }; }
+    } catch { return { ...EMPTY_SAVE }; }
+  }
+  function load() {
+    try { return parseSave(localStorage.getItem(SAVE_KEY)); }
+    catch { return { ...EMPTY_SAVE }; }
+  }
+  function hasNamespacedSave() { try { return localStorage.getItem(SAVE_KEY) != null; } catch { return false; } }
+  // Save legado da origem (chave antiga). Pode ser de um build deste jogo OU de outro projeto
+  // na mesma origem github.io — por isso nunca é adotado sem o jogador confirmar (card de legado).
+  function readLegacy() {
+    try {
+      const raw = localStorage.getItem(LEGACY_SAVE_KEY);
+      if (raw == null) return null;
+      const parsed = parseSave(raw);
+      return { save: parsed, count: Object.keys(parsed.done).length };
+    } catch { return null; }
   }
   function save() { try { localStorage.setItem(SAVE_KEY, JSON.stringify(S.save)); } catch {} }
   function isDone(g) { return !!S.save.done[g]; }
@@ -167,8 +190,9 @@
 
   // ---------- estado ----------
   const S = {
-    mode: 'title',   // title | dialogue | world | puzzle | bead | ceu
+    mode: 'title',   // legacy | title | dialogue | world | puzzle | bead | ceu
     save: load(),
+    legacy: null,    // { save, count } quando há legado a recuperar (card de decisão)
     level: 1,
     cur: null,
     puzzle: null,
@@ -195,6 +219,13 @@
     const sv = S.save.maju;
     S.maju.x = sv ? sv.x : c.x;
     S.maju.y = sv ? sv.y : c.y + 70;
+  }
+
+  // Recuperação de legado: sem save namespeado mas há um save antigo com progresso na origem
+  // → pergunta ao jogador (card) em vez de adotar silenciosamente (evita o "save fantasma").
+  if (!hasNamespacedSave()) {
+    const legacy = readLegacy();
+    if (legacy && legacy.count > 0) { S.legacy = legacy; S.mode = 'legacy'; }
   }
 
   // ---------- texto ----------
@@ -355,6 +386,50 @@
       S.camPan.dy = rawDy * scale;
       S.camPan.t = 1.8;
     }
+  }
+
+  // ---------- card de recuperação de legado ----------
+  // Caixas dos botões compartilhadas por draw e tap (evita drift de coordenadas).
+  const LEGACY_BTN_CONT  = { x: 40, y: 360, w: W - 80, h: 56 };
+  const LEGACY_BTN_FRESH = { x: 40, y: 432, w: W - 80, h: 56 };
+
+  function drawLegacyCard(t) {
+    drawScene(10, ctx, t);
+    PR(ctx, 0, 0, W, H, 'rgba(5,8,16,0.78)');
+    panel(ctx, 24, 200, W - 48, 312, 'rgba(8,14,26,0.92)');
+    const n = S.legacy ? S.legacy.count : 0;
+    pTxt(ctx, 'PROGRESSO ENCONTRADO', W / 2, 238, 18, '#f2c038');
+    pTxt(ctx, 'Achamos um jogo salvo', W / 2, 282, 13, '#bfe6f2', 'center', false);
+    pTxt(ctx, 'neste navegador.', W / 2, 302, 13, '#bfe6f2', 'center', false);
+    pTxt(ctx, `${n}/${TOTAL_PHASES} conchas`, W / 2, 332, 16, '#9fd8f0');
+    // botão Continuar (dourado)
+    const b1 = LEGACY_BTN_CONT;
+    panel(ctx, b1.x, b1.y, b1.w, b1.h, 'rgba(40,32,12,0.95)', '#f2c038');
+    pTxt(ctx, 'CONTINUAR DE ONDE PAREI', b1.x + b1.w / 2, b1.y + b1.h / 2, 13, '#fff8d0');
+    // botão Começar do zero (discreto)
+    const b2 = LEGACY_BTN_FRESH;
+    panel(ctx, b2.x, b2.y, b2.w, b2.h, 'rgba(20,26,40,0.95)', '#5a6a84');
+    pTxt(ctx, 'COMEÇAR DO ZERO', b2.x + b2.w / 2, b2.y + b2.h / 2, 13, '#cdd8e8');
+  }
+
+  // Adota o save legado: valida (já parseado em readLegacy) e grava na chave namespeada.
+  function legacyContinue() {
+    if (S.legacy) S.save = S.legacy.save;
+    S.legacy = null;
+    save();
+    const c = districtCenter(0);
+    const sv = S.save.maju;
+    S.maju.x = sv ? sv.x : c.x;
+    S.maju.y = sv ? sv.y : c.y + 70;
+    S.mode = 'title';
+  }
+  // Descarta o legado: remove a chave antiga (não pergunta de novo) e começa limpo.
+  function legacyFresh() {
+    try { localStorage.removeItem(LEGACY_SAVE_KEY); } catch {}
+    S.legacy = null;
+    S.save = load();          // origem agora limpa → save vazio
+    save();                   // persiste o save namespeado vazio (card não reaparece)
+    S.mode = 'title';
   }
 
   // ---------- título ----------
@@ -1171,6 +1246,12 @@
   }
   function handleTap(x, y) {
     switch (S.mode) {
+      case 'legacy': {
+        const b1 = LEGACY_BTN_CONT, b2 = LEGACY_BTN_FRESH;
+        if (inBox(x, y, b1.x, b1.y, b1.w, b1.h)) { AudioFX.ok(); legacyContinue(); }
+        else if (inBox(x, y, b2.x, b2.y, b2.w, b2.h)) { AudioFX.tap(); legacyFresh(); }
+        break;
+      }
       case 'title':
         AudioFX.ok();
         if (!S.save.opened) {
@@ -1203,6 +1284,9 @@
     if (S.mode !== S._lastMode) { S.fadeT = TRANS; S._lastMode = S.mode; }
 
     switch (S.mode) {
+      case 'legacy':
+        drawLegacyCard(t);
+        break;
       case 'title':
         drawTitle(t);
         break;
@@ -1299,8 +1383,12 @@
     unlocked: d => districtUnlocked(d),
     completeDistrict: d => { for (let k = 0; k < DISTRICT_SIZES[d]; k++) { S.save.done[DISTRICT_STARTS[d] + k] = true; } save(); },
     completeAll: () => { for (let g = 1; g <= TOTAL_PHASES; g++) { S.save.done[g] = true; } save(); },
-    // testes de onboarding: zera o save inteiro e recarrega (fluxo de jogador novo)
-    reset: () => { try { localStorage.removeItem(SAVE_KEY); } catch {} location.reload(); },
+    // testes de onboarding: zera o save inteiro e recarrega (fluxo de jogador novo).
+    // Remove a chave namespeada E a legada — limpeza completa da origem para este jogo.
+    reset: () => { try { localStorage.removeItem(SAVE_KEY); localStorage.removeItem(LEGACY_SAVE_KEY); } catch {} location.reload(); },
+    // card de legado (spec 002): caixas dos botões + toque, para teste headless
+    legacyBtns: () => ({ cont: LEGACY_BTN_CONT, fresh: LEGACY_BTN_FRESH }),
+    tapAt: (x, y) => handleTap(x, y),
     // re-testar as intros dos pais sem perder progresso: faz a missão voltar a ser "não explicada"
     rebrief: () => { S.save.briefed = false; S.save.met.jona = false; S.save.met.mica = false; save(); return 'briefed=false; fale com a Micaele e o Jonatha de novo'; },
     // hooks de teste do onboarding (Fase 2): dispara ação como se a Maju estivesse perto do alvo
