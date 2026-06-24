@@ -2,13 +2,13 @@
 // Teste de regressão headless do onboarding (Fase 2) — spec 001-onboarding-recife.
 // Zero-dep: usa só builtins do node. Carrega os scripts reais do jogo num contexto vm com
 // stubs de browser (canvas/audio/localStorage) e dirige o fluxo via os hooks window.__world.
-//   Rodar:  node specs/001-onboarding-recife/test-onboarding.js
+//   Rodar:  node tests/test-onboarding.js
 // Saída: lista PASS/FAIL por cenário BDD + exit code (0 = todos verdes).
 const fs = require('node:fs');
 const vm = require('node:vm');
 const path = require('node:path');
 
-const ROOT = path.resolve(__dirname, '..', '..');
+const ROOT = path.resolve(__dirname, '..');
 
 // ---- stubs de browser ----
 function fakeCtx() {
@@ -69,7 +69,7 @@ const sandbox = {
 sandbox.globalThis = sandbox;
 sandbox.self = sandbox;
 
-const FILES = ['audio.js', 'sprites.js', 'story.js', 'levels.js', 'puzzles.js', 'world3d.js', 'main.js'];
+const FILES = ['audio.js', 'sprites.js', 'characters.js', 'story.js', 'levels.js', 'puzzles.js', 'world3d.js', 'main.js'];
 const code = FILES.map(f => fs.readFileSync(path.join(ROOT, 'js', f), 'utf8')).join('\n;\n');
 vm.createContext(sandbox);
 try {

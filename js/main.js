@@ -84,35 +84,13 @@
     }
   }
 
-  // personagens-guia da família — posicionados na faixa de cima do bairro
-  const NPCS = [
-    { key: 'jona',    d: 0, dx: -52, dy: -176, draw: drawJonatha, kid: true },
-    { key: 'mica',    d: 0, dx:  52, dy: -176, draw: drawMicaele, kid: true },
-    { key: 'jeff',    d: 1, dx:   0, dy: -176, draw: drawJeff },
-    { key: 'ravi',    d: 2, dx: -52, dy: -176, draw: drawRavi, kid: true, lesson: 'Primo é parceiro pra toda aventura, chuva ou sol.' },
-    { key: 'nicolas', d: 2, dx:  52, dy: -176, draw: drawNico, kid: true, lesson: 'Primo é parceiro pra toda aventura, chuva ou sol.' },
-    { key: 'renato',  d: 3, dx:   0, dy: -176, draw: drawRenato, lesson: 'Fé é o que nos carrega quando as pernas cansam.' },
-    { key: 'bruno',   d: 5, dx:   0, dy: -176, draw: drawBruno, lesson: 'A família só soa bonito quando tá toda unida.' },
-    { key: 'vova',    d: 6, dx:   0, dy: -176, draw: drawVova },
-    { key: 'vovoMae', d: 7, dx:   0, dy: -176, draw: drawVovoMae, lesson: 'O amor que vai pro céu não desaparece.' },
-    { key: 'vovo',    d: 8, dx:   0, dy: -214, draw: drawVovo, ending: true },
-  ];
+  // personagens-guia da família — derivados do registro único (ADR-005, js/characters.js).
+  // x/y vêm do districtCenter logo abaixo (campo por-mundo, não pertence ao registro).
+  const NPCS = Characters.npcs();
   NPCS.forEach(n => { const c = districtCenter(n.d); n.x = c.x + n.dx; n.y = c.y + n.dy; });
 
-  // quem fala nos diálogos (retrato + nome + cor)
-  const SPEAKERS = {
-    maju:    { name: 'MAJU',          color: '#f2c038', face: MAJU_FACE, pal: FACE_PAL, body: drawMaju },
-    vovo:    { name: 'VOVÔ MARO',     color: '#caa15a', face: VOVO_FACE, pal: VOVO_FACE_PAL, body: drawVovo },
-    jona:    { name: 'JONATHA',       color: '#3fae7a', body: drawJonatha },
-    mica:    { name: 'MICAELE',       color: '#e87ab0', body: drawMicaele },
-    jeff:    { name: 'TITIO JEFF',    color: '#f2a83a', body: drawJeff },
-    vova:    { name: 'VOVÓ',          color: '#c79bd0', body: drawVova },
-    bruno:   { name: 'TITIO BRUNO',   color: '#8b5e2a', body: drawBruno },
-    renato:  { name: 'TITIO RENATO',  color: '#1e3a6e', body: drawRenato },
-    ravi:    { name: 'PRIMO RAVI',    color: '#e07020', body: drawRavi },
-    nicolas: { name: 'PRIMO NICOLAS', color: '#2a8a3a', body: drawNico },
-    vovoMae: { name: 'VOVÓ MARIA',    color: '#f0d878', body: drawVovoMae },
-  };
+  // quem fala nos diálogos (retrato + nome + cor) — derivado do registro único (ADR-005)
+  const SPEAKERS = Characters.speakers();
 
   // ---------- save (v3: done = fases concluídas; met = quem já conheci) ----------
   // Chave namespeada por deploy: GitHub Pages de usuário compartilha UMA origem

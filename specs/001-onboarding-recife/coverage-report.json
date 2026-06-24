@@ -1,6 +1,6 @@
 {
   "id": "001-onboarding-recife",
-  "generated_by": "node specs/001-onboarding-recife/test-onboarding.js (headless harness)",
+  "generated_by": "node tests/test-onboarding.js (headless harness)",
   "note": "coverage-gate.sh do harness tem bug pré-existente (local fora de função); cobertura é modo-aviso (sem framework — PROJECT-CONSTITUTION §9). Validação real via teste headless dos cenários BDD.",
   "bdd_completeness": {
     "status": "PASS",

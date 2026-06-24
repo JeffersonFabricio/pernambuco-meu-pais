@@ -117,18 +117,9 @@ globalThis.World3D = (() => {
   ];
 
   // ---------- personagens no mundo ----------
-  const WORLD_NPCS = [
-    { key: 'mica',    d: 0, col: 3,  row: 6,  color: '#e87ab0', label: 'MICAELE'   },
-    { key: 'jona',    d: 0, col: 8,  row: 9,  color: '#3fae7a', label: 'JONATHA'   },
-    { key: 'jeff',    d: 1, col: 9,  row: 7,  color: '#f2a83a', label: 'TITIO JEFF' },
-    { key: 'ravi',    d: 2, col: 7,  row: 3,  color: '#e07020', label: 'RAVI',     lesson: 'Primo é parceiro pra toda aventura, chuva ou sol.' },
-    { key: 'nicolas', d: 2, col: 9,  row: 3,  color: '#2a8a3a', label: 'NICOLAS',  lesson: 'Primo é parceiro pra toda aventura, chuva ou sol.' },
-    { key: 'renato',  d: 3, col: 3,  row: 11, color: '#8b5e2a', label: 'RENATO',    lesson: 'Fé é o que nos carrega quando as pernas cansam.' },
-    { key: 'bruno',   d: 5, col: 9,  row: 13, color: '#5a4030', label: 'T. BRUNO',  lesson: 'A família só soa bonito quando tá toda unida.' },
-    { key: 'vova',    d: 6, col: 3,  row: 16, color: '#c79bd0', label: 'VOVÓ'       },
-    { key: 'vovoMae', d: 7, col: 9,  row: 16, color: '#f0d878', label: 'VOVÓ MARIA', lesson: 'O amor que vai pro céu não desaparece.' },
-    { key: 'vovo',    d: 8, col: 7,  row: 18, color: '#f2c038', label: 'VOVÔ MARO', ending: true },
-  ];
+  // Derivados do registro único (ADR-005, js/characters.js): col/row/label são o por-view
+  // do passeio; cor e label caem no canônico quando não divergem.
+  const WORLD_NPCS = Characters.worldNpcs();
 
   // ---------- nós de fase (estilo Super Mario: cada concha é um ponto no mapa) ----------
   // Gerados dos tiles caminháveis de cada zona: espalhados (farthest-point) e longe
@@ -426,18 +417,7 @@ globalThis.World3D = (() => {
   }
 
   // ---------- lookup de sprites dos NPCs (funções globais de sprites.js) ----------
-  const NPC_DRAW = {
-    jona:    drawJonatha,
-    mica:    drawMicaele,
-    jeff:    drawJeff,
-    ravi:    drawRavi,
-    nicolas: drawNico,
-    renato:  drawRenato,
-    bruno:   drawBruno,
-    vova:    drawVova,
-    vovoMae: drawVovoMae,
-    vovo:    drawVovo,
-  };
+  const NPC_DRAW = Characters.npcDraw();
 
   // ---------- nó de fase (concha coletável no mapa, estilo Mario) ----------
   function drawNode(ctx, t, node, done) {

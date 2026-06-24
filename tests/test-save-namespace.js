@@ -3,16 +3,16 @@
 // Zero-dep: só builtins do node. Recarrega os scripts reais do jogo num contexto vm com
 // stubs de browser, pré-semeando o localStorage por cenário (comportamento de INIT depende do
 // estado salvo na carga). Dirige os toques do card via window.__tap nas coords dos botões.
-//   Rodar:  node specs/002-save-namespace/test-save-namespace.js
+//   Rodar:  node tests/test-save-namespace.js
 // Saída: PASS/FAIL por cenário BDD + exit code (0 = todos verdes).
 const fs = require('node:fs');
 const vm = require('node:vm');
 const path = require('node:path');
 
-const ROOT = path.resolve(__dirname, '..', '..');
+const ROOT = path.resolve(__dirname, '..');
 const NEW_KEY = 'maresRecife:pernambuco-meu-pais';
 const LEGACY_KEY = 'maresRecife';
-const FILES = ['audio.js', 'sprites.js', 'story.js', 'levels.js', 'puzzles.js', 'world3d.js', 'main.js'];
+const FILES = ['audio.js', 'sprites.js', 'characters.js', 'story.js', 'levels.js', 'puzzles.js', 'world3d.js', 'main.js'];
 const code = FILES.map(f => fs.readFileSync(path.join(ROOT, 'js', f), 'utf8')).join('\n;\n');
 
 // ---- stubs de browser (iguais ao harness do onboarding) ----

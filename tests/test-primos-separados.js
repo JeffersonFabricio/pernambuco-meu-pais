@@ -2,15 +2,15 @@
 // Teste de regressão headless dos primos separados — spec 003-primos-separados.
 // Mesmo harness do save namespace: carrega os scripts reais num contexto vm com stubs de
 // browser, semeando o localStorage por cenário, e dirige a conversa via window.__world.talk/finish.
-//   Rodar:  node specs/003-primos-separados/test-primos-separados.js
+//   Rodar:  node tests/test-primos-separados.js
 // Saída: PASS/FAIL por asserção + exit code (0 = todos verdes).
 const fs = require('node:fs');
 const vm = require('node:vm');
 const path = require('node:path');
 
-const ROOT = path.resolve(__dirname, '..', '..');
+const ROOT = path.resolve(__dirname, '..');
 const NEW_KEY = 'maresRecife:pernambuco-meu-pais';
-const FILES = ['audio.js', 'sprites.js', 'story.js', 'levels.js', 'puzzles.js', 'world3d.js', 'main.js'];
+const FILES = ['audio.js', 'sprites.js', 'characters.js', 'story.js', 'levels.js', 'puzzles.js', 'world3d.js', 'main.js'];
 const code = FILES.map(f => fs.readFileSync(path.join(ROOT, 'js', f), 'utf8')).join('\n;\n');
 const LESSON = 'parceiro pra toda aventura';
 
