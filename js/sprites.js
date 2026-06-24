@@ -883,9 +883,8 @@ const SCENES = {
       casa(ctx, 420, 0);
       PR(ctx, 0, 420, 360, 220, '#d8c8a8'); // praça
       PR(ctx, 0, 420, 360, 4, 'rgba(255,255,255,0.18)');
-      PR(ctx, 150, 480, 60, 60, '#c8b490'); // rosa dos ventos
-      PR(ctx, 176, 470, 8, 80, '#8a6a4a');
-      PR(ctx, 140, 506, 80, 8, '#8a6a4a');
+      // disco circular da rosa dos ventos (piso fiel ao Marco Zero de Cícero Dias)
+      drawRosaDosVentos(ctx, 180, 510, 128);
     },
     d(ctx, t) {
       sun(ctx, 290, 80, 26, t);
@@ -1066,6 +1065,61 @@ function mangueRootsSil(ctx, yBase) {
   for (let i = 0; i < 5; i++) mangueTree(ctx, 30 + i * 78, yBase - 14, 40 + (i * 17 % 16), far);
   const near = { wood: '#0e140a', woodD: '#0e140a', leaf: '#13110a', leafD: '#13110a', leafL: '#13110a' };
   for (let i = 0; i < 4; i++) mangueTree(ctx, 6 + i * 104, yBase, 58 + (i * 23 % 24), near);
+}
+
+// ---------- Rosa dos Ventos do Marco Zero (piso circular de Cícero Dias) ----------
+// Disco grande: anel externo azul, miolo creme, estrela de 8 pontas colorida e marcações.
+// Compartilhado entre SCENES[1].s (piso da cena) e OrbitPuzzle (tabuleiro do puzzle).
+function drawRosaDosVentos(ctx, cx, cy, r) {
+  // anel externo azul
+  PR(ctx, cx - r, cy - r / 2, r * 2, r, '#1d6fa3');
+  PR(ctx, cx - r / 2, cy - r, r, r * 2, '#1d6fa3');
+  PR(ctx, cx - r * 0.85, cy - r * 0.85, r * 1.7, r * 1.7, '#1d6fa3');
+  // miolo creme
+  const ri = Math.round(r * 0.72);
+  PR(ctx, cx - ri, cy - ri / 2, ri * 2, ri, '#f5efe0');
+  PR(ctx, cx - ri / 2, cy - ri, ri, ri * 2, '#f5efe0');
+  PR(ctx, cx - ri * 0.85, cy - ri * 0.85, ri * 1.7, ri * 1.7, '#f5efe0');
+  // estrela de 8 pontas (alternando cores da paleta semântica)
+  const STAR_CORES = ['#f2c038', '#d94f4f', '#5b8bd9', '#67b06b', '#f2c038', '#c97bb6', '#5b8bd9', '#d94f4f'];
+  const rs = Math.round(r * 0.58); // raio das pontas
+  const rc = Math.round(r * 0.22); // raio do núcleo
+  for (let i = 0; i < 8; i++) {
+    const a = (i / 8) * Math.PI * 2 - Math.PI / 2;
+    const ax = Math.cos(a), ay = Math.sin(a);
+    // ponta da estrela: triângulo estreito do centro até rs
+    const pxT = Math.round(cx + ax * rs), pyT = Math.round(cy + ay * rs);
+    const pxL = Math.round(cx + Math.cos(a - 0.3) * rc), pyL = Math.round(cy + Math.sin(a - 0.3) * rc);
+    const pxR = Math.round(cx + Math.cos(a + 0.3) * rc), pyR = Math.round(cy + Math.sin(a + 0.3) * rc);
+    ctx.fillStyle = STAR_CORES[i];
+    ctx.beginPath();
+    ctx.moveTo(pxT, pyT);
+    ctx.lineTo(pxL, pyL);
+    ctx.lineTo(pxR, pyR);
+    ctx.closePath();
+    ctx.fill();
+  }
+  // raios marcadores N/NE/E/SE/S/SO/O/NO (linhas finas sobre o miolo)
+  const DIRS = ['N', 'NE', 'L', 'SE', 'S', 'SO', 'O', 'NO'];
+  ctx.fillStyle = '#0a1a2f';
+  for (let i = 0; i < 8; i++) {
+    const a = (i / 8) * Math.PI * 2 - Math.PI / 2;
+    const x1 = Math.round(cx + Math.cos(a) * rc);
+    const y1 = Math.round(cy + Math.sin(a) * rc);
+    const x2 = Math.round(cx + Math.cos(a) * Math.round(r * 0.62));
+    const y2 = Math.round(cy + Math.sin(a) * Math.round(r * 0.62));
+    PR(ctx, Math.min(x1, x2) - 1, Math.min(y1, y2) - 1, Math.abs(x2 - x1) + 2, Math.abs(y2 - y1) + 2, '#0a1a2f');
+  }
+  // núcleo central
+  PR(ctx, cx - rc, cy - rc / 2, rc * 2, rc, '#f2c038');
+  PR(ctx, cx - rc / 2, cy - rc, rc, rc * 2, '#f2c038');
+  // marcação N em destaque (Norte da rosa dos ventos)
+  const nSize = Math.max(8, Math.round(r * 0.16));
+  ctx.fillStyle = '#0a1a2f';
+  ctx.font = `bold ${nSize}px "Courier New", monospace`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('N', cx, cy - Math.round(r * 0.84));
 }
 
 // cache de camadas estáticas das cenas (renderizadas uma vez por cena)

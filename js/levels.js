@@ -21,7 +21,7 @@ const CHAPTERS = [
     fases: [
       { anchor: 1, e: 1 },
       { t: 'Torre Malakoff',        e: 7,  fact: 'A Torre Malakoff era a porta do antigo Arsenal da Marinha. Hoje é mirante e observatório do céu.' },
-      { t: 'Rosa dos Ventos',       e: 9,  fact: 'A rosa dos ventos do Marco Zero foi desenhada pelo pintor pernambucano Cícero Dias.' },
+      { t: 'Rosa dos Ventos',       e: 11, fact: 'A rosa dos ventos do Marco Zero foi desenhada pelo pintor pernambucano Cícero Dias.' },
       { t: 'Praça do Arsenal',      e: 10, fact: 'A Praça do Arsenal reúne feirinhas, livros e poesia de rua no coração do Bairro do Recife.' },
     ],
   },
@@ -174,6 +174,7 @@ function engineCfg(e, g) {
     case 8:  return { rounds: [3, 3, 4][tier], opts: [3, 3, 4][tier] };
     case 9:  return { sliders: tier === 2 ? 5 : 4 };
     case 10: return { n: tier === 2 ? 7 : 6, rocks: [8, 10, 12][tier] };
+    case 11: return { rings: 3 + tier };
   }
   return {};
 }
@@ -206,4 +207,8 @@ function getLevel(g) {
     intro: [{ who: 'nar', text: f.fact }],
     outro: [OUTRO_POOL[d + 1][(k) % 3]],
   };
+}
+// Hooks de teste: expõe constantes para o harness headless.
+if (typeof window !== 'undefined') {
+  window.__levels = { TOTAL_PHASES, DISTRICT_SIZES, DISTRICT_STARTS, getLevel, engineCfg };
 }

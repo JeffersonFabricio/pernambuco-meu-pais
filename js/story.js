@@ -184,6 +184,7 @@ const PUZZLE_HINTS = {
   8: 'Observe a sequência de sombrinhas e escolha a próxima. 3 rodadas!',
   9: 'Arraste os cursores e toque em TOCAR. As setas mostram se sobe ou desce!',
   10: 'Toque nas setas para montar a rota e depois em ZARPAR. Desvie das pedras!',
+  11: 'Toque em cada anel para girá-lo um passo. Alinhe todos os planetas no Norte da rosa dos ventos!',
 };
 
 // ============================================================

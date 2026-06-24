@@ -1076,7 +1076,128 @@ class RoutePuzzle {
   }
 }
 
+// ---------- 11: Alinhamento dos Planetas (girar anéis da rosa dos ventos) ----------
+// Tabuleiro = drawRosaDosVentos (definido em sprites.js, carrega antes).
+// N anéis concêntricos; cada anel tem um planeta em uma de 8 posições (pontos da rosa).
+// Tocar a faixa de um anel o gira um passo no horário: pos = (pos+1) % 8.
+// Quando todos os planetas estiverem no Norte (pos === 0), o puzzle é resolvido.
+// Solubilidade por construção: cada anel é cíclico de 8 posições independentes;
+// nenhum anel começa no Norte (pos ∈ [1,7]) → nunca abre já resolvido.
+class OrbitPuzzle {
+  constructor(cfg = {}) {
+    const n = cfg.rings || 3;
+    // Centro e raio base do tabuleiro (área útil do puzzle)
+    this.cx = 180;
+    this.cy = 330;
+    const rBase = 100;
+    // Cores dos planetas (paleta semântica)
+    const PLANET_CORES = ['#d94f4f', '#f2c038', '#5b8bd9', '#67b06b', '#c97bb6', '#e8855b'];
+    this.rings = [];
+    for (let i = 0; i < n; i++) {
+      this.rings.push({
+        r: rBase - i * Math.round(rBase / (n + 0.5)), // raios decrescentes
+        pos: 1 + rnd(7), // 1..7 — nunca Norte (0), garante anti-trivial
+        cor: PLANET_CORES[i % PLANET_CORES.length],
+      });
+    }
+    this.solved = false;
+  }
+
+  // Retorna {x,y} do ponto Norte da faixa do anel i (contrato de teste).
+  topPointOf(i) {
+    const ring = this.rings[i];
+    if (!ring) return { x: this.cx, y: this.cy };
+    const NUCLEO = 16;
+    const r0 = ring.r;
+    const r1 = this.rings[i + 1] ? this.rings[i + 1].r : NUCLEO;
+    // Ponto médio da faixa, garantindo estar acima do núcleo
+    const rMid = Math.round((r0 + Math.max(NUCLEO, r1)) / 2);
+    // Norte = ângulo -Math.PI/2 (topo do círculo)
+    return { x: this.cx, y: this.cy - rMid };
+  }
+
+  tap(x, y) {
+    if (this.solved) return;
+    const dx = x - this.cx, dy = y - this.cy;
+    const dist = Math.hypot(dx, dy);
+    // Raio mínimo: exclui o núcleo central do tabuleiro
+    const NUCLEO = 16;
+    // Raio máximo: exclui toques além do anel externo
+    const rMax = this.rings[0] ? this.rings[0].r + 12 : 112;
+    if (dist < NUCLEO || dist > rMax) return; // toque no centro ou fora do disco
+    // Acha o anel pela faixa de distância ao centro
+    for (let i = 0; i < this.rings.length; i++) {
+      const r0 = this.rings[i].r;
+      const r1 = this.rings[i + 1] ? this.rings[i + 1].r : NUCLEO;
+      // faixa do anel: de r1 (raio interno) até r0 (raio externo), com 6px de tolerância
+      const rOuter = r0 + 6, rInner = Math.max(NUCLEO, r1 - 6);
+      if (dist >= rInner && dist <= rOuter) {
+        this.rings[i].pos = (this.rings[i].pos + 1) % 8;
+        AudioFX.blip();
+        // Verifica vitória apenas na transição !solved → solved
+        if (this.rings.every(r => r.pos === 0)) {
+          this.solved = true;
+          AudioFX.win();
+        }
+        return;
+      }
+    }
+    // Toque fora de qualquer anel (lacuna entre anéis): no-op
+  }
+
+  update() {}
+
+  draw(ctx, t) {
+    // Tabuleiro: disco da rosa dos ventos como fundo
+    drawRosaDosVentos(ctx, this.cx, this.cy, this.rings[0] ? this.rings[0].r + 16 : 116);
+    // Anéis concêntricos (órbitas) + planetas
+    for (let i = 0; i < this.rings.length; i++) {
+      const ring = this.rings[i];
+      const r1 = this.rings[i + 1] ? this.rings[i + 1].r : 0;
+      // Faixa de anel: círculo vazado entre r e r_next
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(this.cx, this.cy, ring.r + 8, 0, Math.PI * 2);
+      ctx.arc(this.cx, this.cy, Math.max(0, r1 - 8), 0, Math.PI * 2, true);
+      ctx.fillStyle = `rgba(10,26,47,0.30)`;
+      ctx.fill();
+      ctx.restore();
+      // Borda do anel (destaque quando quase no Norte)
+      const nearNorth = ring.pos === 1 || ring.pos === 7;
+      ctx.beginPath();
+      ctx.arc(this.cx, this.cy, ring.r, 0, Math.PI * 2);
+      ctx.strokeStyle = nearNorth ? '#f2c038' : 'rgba(255,255,255,0.18)';
+      ctx.lineWidth = nearNorth ? 2 : 1;
+      ctx.stroke();
+      // Planeta na posição correta (ângulo = pos * 45° - 90°)
+      const angle = (ring.pos / 8) * Math.PI * 2 - Math.PI / 2;
+      const rMid = Math.round((ring.r + r1) / 2);
+      const px = Math.round(this.cx + Math.cos(angle) * rMid);
+      const py = Math.round(this.cy + Math.sin(angle) * rMid);
+      const ps = 10 + Math.round(Math.sin(t * 2 + i) * 1.5); // pulsação suave
+      PR(ctx, px - ps / 2, py - ps / 2, ps, ps, ring.cor);
+      PR(ctx, px - ps / 2 + 2, py - ps / 2 + 2, Math.round(ps * 0.4), Math.round(ps * 0.4), 'rgba(255,255,255,0.4)'); // brilho
+    }
+    // Eixo Norte destacado
+    const nY = this.cy - (this.rings[0] ? this.rings[0].r + 20 : 136);
+    PR(ctx, this.cx - 1, nY, 2, 24, '#f2c038');
+    pTxt(ctx, '★ NORTE', 180, nY - 14, 11, '#f2c038');
+    // Instrução
+    if (!this.solved) {
+      pTxt(ctx, 'Toque para girar cada anel', 180, PA.y + 14, 13, '#bfe6f2');
+      const aligned = this.rings.filter(r => r.pos === 0).length;
+      pTxt(ctx, `${aligned}/${this.rings.length} planetas no Norte`, 180, PA.y + 34, 12, '#9fb4d0', 'center', false);
+    } else {
+      pTxt(ctx, '✦ ALINHAMENTO PERFEITO! ✦', 180, PA.y + 14, 14, '#f2c038');
+    }
+  }
+}
+
 const PUZZLES = {
   1: LightsPuzzle, 2: MemoryPuzzle, 3: SharkPuzzle, 4: PipePuzzle, 5: MazePuzzle,
   6: ShadowPuzzle, 7: RhythmPuzzle, 8: SequencePuzzle, 9: MixerPuzzle, 10: RoutePuzzle,
+  11: OrbitPuzzle,
 };
+// Hook de teste: expõe PUZZLES para o harness headless (window.__puzzles).
+// Não interfere com main.js, que usa PUZZLES diretamente (variável de escopo global).
+if (typeof window !== 'undefined') window.__puzzles = PUZZLES;
