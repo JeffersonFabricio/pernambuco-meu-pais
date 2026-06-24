@@ -1,0 +1,25 @@
+{
+  "spec_id": "003-primos-separados",
+  "status": "warn",
+  "reason": "parcialmente validado (alguma dimensão skipped/warn) ",
+  "timestamp": "2026-06-24T19:36:00Z",
+  "bdd_completeness": {
+    "status": "pass",
+    "scenarios_total": 11,
+    "scenarios_covered": 11,
+    "percent": 100,
+    "missing": " "
+  },
+  "unit_coverage": {
+    "status": "skipped",
+    "percent": 0,
+    "target": 80,
+    "tool": " ",
+    "detail": "coverage_tool não declarado em STACK.md e não detectável "
+  },
+  "e2e_validation": {
+    "status": "skipped",
+    "tool": " ",
+    "detail": "nenhum diretório e2e detectado e e2e_tool não declarado em STACK.md "
+  }
+}

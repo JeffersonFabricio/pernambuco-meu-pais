@@ -271,21 +271,32 @@ STORY.meet = {
     { who: 'maju', text: 'Tô no ritmo, vovó! Já volto.' },
   ],
 
-  // Primos Ravi e Nicolas — Recife na Chuva (d2)
-  primos: [
-    { who: 'ravi', text: 'Prima Maju chegou! Nicolas, ela tá aqui, olha!' },
-    { who: 'nico', text: 'Ê, prima! Pensamos que ia perder a chuva do Recife!' },
-    { who: 'maju', text: 'Ravi! Nicolas! Que saudade de vocês dois!' },
+  // Primo Ravi — Recife na Chuva (d2)
+  ravi: [
+    { who: 'ravi', text: 'Prima Maju chegou! O Nicolas tá ali adiante, mas vem cá primeiro!' },
+    { who: 'maju', text: 'Ravi! Que saudade de você, primo!' },
     { who: 'ravi', text: 'A chuva aqui não é pra correr, prima. É pra dançar na calçada.' },
-    { who: 'nico', text: 'A gente sempre vai tá junto, Maju. Primo é isso: parceiro pra toda aventura, chuva ou sol.' },
+    { who: 'ravi', text: 'Eu e o Nicolas, a gente sempre vai tá junto contigo. Primo é parceiro pra toda aventura, chuva ou sol.' },
     { who: 'maju', text: 'Com vocês dois do meu lado, nada parece difícil!' },
     { who: 'ravi', text: 'Vai lá, prima! Cada concha que tu achar, a gente tá aqui torcendo.' },
-    { who: 'nico', text: 'E quando tu voltar a gente conta história de chuva. Combinado?' },
-    { who: 'maju', text: 'Combinado, primos! Já já tô de volta com o colar quase cheio!' },
+    { who: 'maju', text: 'Já já tô de volta com o colar quase cheio!' },
   ],
-  primosAgain: [
+  raviAgain: [
     { who: 'ravi', text: 'Tá arrasando, prima! Já perdemos a conta de quantas conchas tu achou.' },
-    { who: 'nico', text: 'A gente não vai a lugar nenhum, Maju. Tô aqui na chuva com o Ravi, sempre.' },
+    { who: 'maju', text: 'Adoro você, primo! Já já volto!' },
+  ],
+  // Primo Nicolas — Recife na Chuva (d2)
+  nicolas: [
+    { who: 'nicolas', text: 'Ê, prima Maju! Pensei que ia perder a chuva do Recife com você!' },
+    { who: 'maju', text: 'Nicolas! E cadê o Ravi?' },
+    { who: 'nicolas', text: 'Tá pertinho, prima. A gente nunca fica longe um do outro.' },
+    { who: 'nicolas', text: 'A gente sempre vai tá junto, Maju. Primo é parceiro pra toda aventura, chuva ou sol.' },
+    { who: 'maju', text: 'Que bom ter vocês dois aqui comigo!' },
+    { who: 'nicolas', text: 'E quando tu voltar a gente conta história de chuva. Combinado?' },
+    { who: 'maju', text: 'Combinado, primo! Já já tô de volta com o colar quase cheio!' },
+  ],
+  nicolasAgain: [
+    { who: 'nicolas', text: 'A gente não vai a lugar nenhum, Maju. Tô aqui na chuva com o Ravi, sempre.' },
     { who: 'maju', text: 'Adoro vocês dois! Já já volto!' },
   ],
 

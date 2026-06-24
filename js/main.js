@@ -89,7 +89,8 @@
     { key: 'jona',    d: 0, dx: -52, dy: -176, draw: drawJonatha, kid: true },
     { key: 'mica',    d: 0, dx:  52, dy: -176, draw: drawMicaele, kid: true },
     { key: 'jeff',    d: 1, dx:   0, dy: -176, draw: drawJeff },
-    { key: 'primos',  d: 2, dx:   0, dy: -176, draw: drawPrimos, kid: true, lesson: 'Primo é parceiro pra toda aventura, chuva ou sol.' },
+    { key: 'ravi',    d: 2, dx: -52, dy: -176, draw: drawRavi, kid: true, lesson: 'Primo é parceiro pra toda aventura, chuva ou sol.' },
+    { key: 'nicolas', d: 2, dx:  52, dy: -176, draw: drawNico, kid: true, lesson: 'Primo é parceiro pra toda aventura, chuva ou sol.' },
     { key: 'renato',  d: 3, dx:   0, dy: -176, draw: drawRenato, lesson: 'Fé é o que nos carrega quando as pernas cansam.' },
     { key: 'bruno',   d: 5, dx:   0, dy: -176, draw: drawBruno, lesson: 'A família só soa bonito quando tá toda unida.' },
     { key: 'vova',    d: 6, dx:   0, dy: -176, draw: drawVova },
@@ -109,8 +110,7 @@
     bruno:   { name: 'TITIO BRUNO',   color: '#8b5e2a', body: drawBruno },
     renato:  { name: 'TITIO RENATO',  color: '#1e3a6e', body: drawRenato },
     ravi:    { name: 'PRIMO RAVI',    color: '#e07020', body: drawRavi },
-    nico:    { name: 'PRIMO NICOLAS', color: '#2a8a3a', body: drawNico },
-    primos:  { name: 'OS PRIMOS',     color: '#e07020', body: drawRavi },
+    nicolas: { name: 'PRIMO NICOLAS', color: '#2a8a3a', body: drawNico },
     vovoMae: { name: 'VOVÓ MARIA',    color: '#f0d878', body: drawVovoMae },
   };
 
@@ -135,7 +135,11 @@
         const briefed = !!s.briefed
           || !!(s.met && s.met.jona && s.met.mica)
           || Object.keys(s.done || {}).length > 0;
-        return { v: 3, done: s.done || {}, opened: !!s.opened, fin: !!s.fin, maju: s.maju || null, met: s.met || {}, briefed };
+        // Migração: os primos viraram dois NPCs (ravi + nicolas). Quem já tinha conhecido
+        // "OS PRIMOS" (met.primos) não revê as introduções — herda os dois como conhecidos.
+        const met = (s.met && typeof s.met === 'object') ? s.met : {};
+        if (met.primos) { met.ravi = true; met.nicolas = true; }
+        return { v: 3, done: s.done || {}, opened: !!s.opened, fin: !!s.fin, maju: s.maju || null, met, briefed };
       }
       const prog = s.v === 2 ? Math.min(TOTAL_PHASES, s.prog || 0) : 0;
       const done = {};
