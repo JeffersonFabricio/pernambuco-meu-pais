@@ -8,6 +8,13 @@ function PR(ctx, x, y, w, h, c) {
   ctx.fillStyle = c;
   ctx.fillRect(Math.round(x), Math.round(y), Math.round(w), Math.round(h));
 }
+// círculo cheio
+function fillCircle(ctx, cx, cy, r, c) {
+  ctx.fillStyle = c;
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, Math.PI * 2);
+  ctx.fill();
+}
 // retângulo em unidades de pixel-art
 function PU(ctx, x, y, w, h, c) { PR(ctx, x * U, y * U, w * U, h * U, c); }
 
@@ -1106,58 +1113,61 @@ function mangueRootsSil(ctx, yBase) {
 }
 
 // ---------- Rosa dos Ventos do Marco Zero (piso circular de Cícero Dias) ----------
-// Disco grande: anel externo azul, miolo creme, estrela de 8 pontas colorida e marcações.
-// Compartilhado entre SCENES[1].s (piso da cena) e OrbitPuzzle (tabuleiro do puzzle).
+// Mosaico real: disco no calçadão terracota, anel azul, campo creme e uma rosa dos
+// ventos de pontas facetadas em PASTÉIS suaves (não cores primárias) — 8 pontas longas
+// alternando verde-sálvia/rosa-velho e 8 curtas intercaladas azul-claro/dourado-pálido,
+// com medalhão central. Compartilhado entre SCENES[1].s e OrbitPuzzle (tabuleiro).
 function drawRosaDosVentos(ctx, cx, cy, r) {
-  // anel externo azul
-  PR(ctx, cx - r, cy - r / 2, r * 2, r, '#1d6fa3');
-  PR(ctx, cx - r / 2, cy - r, r, r * 2, '#1d6fa3');
-  PR(ctx, cx - r * 0.85, cy - r * 0.85, r * 1.7, r * 1.7, '#1d6fa3');
-  // miolo creme
-  const ri = Math.round(r * 0.72);
-  PR(ctx, cx - ri, cy - ri / 2, ri * 2, ri, '#f5efe0');
-  PR(ctx, cx - ri / 2, cy - ri, ri, ri * 2, '#f5efe0');
-  PR(ctx, cx - ri * 0.85, cy - ri * 0.85, ri * 1.7, ri * 1.7, '#f5efe0');
-  // estrela de 8 pontas (alternando cores da paleta semântica)
-  const STAR_CORES = ['#f2c038', '#d94f4f', '#5b8bd9', '#67b06b', '#f2c038', '#c97bb6', '#5b8bd9', '#d94f4f'];
-  const rs = Math.round(r * 0.58); // raio das pontas
-  const rc = Math.round(r * 0.22); // raio do núcleo
+  ctx.save();
+  // disco circular: borda terracota do calçadão → aro teal → faixa azul-clara → campo creme
+  fillCircle(ctx, cx, cy, r,        '#c08456'); // calçada portuguesa avermelhada (entorno)
+  fillCircle(ctx, cx, cy, r * 0.97, '#3f86a8'); // aro teal (borda do mosaico)
+  fillCircle(ctx, cx, cy, r * 0.91, '#9cc0db'); // faixa azul-clara
+  fillCircle(ctx, cx, cy, r * 0.80, '#f1e8d0'); // campo creme/marfim
+  ctx.strokeStyle = 'rgba(63,134,168,0.55)';
+  ctx.lineWidth = Math.max(1, r * 0.012);
+  ctx.beginPath(); ctx.arc(cx, cy, r * 0.80, 0, Math.PI * 2); ctx.stroke();
+
+  // ponta facetada da rosa: kite dividido no eixo (metade clara + metade sombra)
+  const pt = (a, len, halfW, light, dark) => {
+    const tx = cx + Math.cos(a) * len,            ty = cy + Math.sin(a) * len;
+    const lx = cx + Math.cos(a - Math.PI / 2) * halfW, ly = cy + Math.sin(a - Math.PI / 2) * halfW;
+    const rx = cx + Math.cos(a + Math.PI / 2) * halfW, ry = cy + Math.sin(a + Math.PI / 2) * halfW;
+    ctx.fillStyle = light;
+    ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(lx, ly); ctx.lineTo(tx, ty); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = dark;
+    ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(rx, ry); ctx.lineTo(tx, ty); ctx.closePath(); ctx.fill();
+  };
+
+  // 8 pontas curtas intercaladas (diagonais secundárias), defasadas 22,5° — desenhadas
+  // primeiro pra ficarem ATRÁS das longas. Azul-claro e dourado-pálido alternados.
+  const SHORT = [['#aecbe4', '#84a9cc'], ['#ecd79a', '#d4ba70']];
+  for (let i = 0; i < 8; i++) {
+    const a = ((i + 0.5) / 8) * Math.PI * 2 - Math.PI / 2;
+    pt(a, r * 0.42, r * 0.085, SHORT[i % 2][0], SHORT[i % 2][1]);
+  }
+  // 8 pontas longas (N/L/S/O + diagonais) — verde-sálvia e rosa-velho alternados
+  const LONG = [['#a9c690', '#86a96e'], ['#e1b3aa', '#c78f86']];
   for (let i = 0; i < 8; i++) {
     const a = (i / 8) * Math.PI * 2 - Math.PI / 2;
-    const ax = Math.cos(a), ay = Math.sin(a);
-    // ponta da estrela: triângulo estreito do centro até rs
-    const pxT = Math.round(cx + ax * rs), pyT = Math.round(cy + ay * rs);
-    const pxL = Math.round(cx + Math.cos(a - 0.3) * rc), pyL = Math.round(cy + Math.sin(a - 0.3) * rc);
-    const pxR = Math.round(cx + Math.cos(a + 0.3) * rc), pyR = Math.round(cy + Math.sin(a + 0.3) * rc);
-    ctx.fillStyle = STAR_CORES[i];
-    ctx.beginPath();
-    ctx.moveTo(pxT, pyT);
-    ctx.lineTo(pxL, pyL);
-    ctx.lineTo(pxR, pyR);
-    ctx.closePath();
-    ctx.fill();
+    pt(a, r * 0.68, r * 0.135, LONG[i % 2][0], LONG[i % 2][1]);
   }
-  // raios marcadores N/NE/E/SE/S/SO/O/NO (linhas finas sobre o miolo)
-  const DIRS = ['N', 'NE', 'L', 'SE', 'S', 'SO', 'O', 'NO'];
-  ctx.fillStyle = '#0a1a2f';
-  for (let i = 0; i < 8; i++) {
-    const a = (i / 8) * Math.PI * 2 - Math.PI / 2;
-    const x1 = Math.round(cx + Math.cos(a) * rc);
-    const y1 = Math.round(cy + Math.sin(a) * rc);
-    const x2 = Math.round(cx + Math.cos(a) * Math.round(r * 0.62));
-    const y2 = Math.round(cy + Math.sin(a) * Math.round(r * 0.62));
-    PR(ctx, Math.min(x1, x2) - 1, Math.min(y1, y2) - 1, Math.abs(x2 - x1) + 2, Math.abs(y2 - y1) + 2, '#0a1a2f');
-  }
-  // núcleo central
-  PR(ctx, cx - rc, cy - rc / 2, rc * 2, rc, '#f2c038');
-  PR(ctx, cx - rc / 2, cy - rc, rc, rc * 2, '#f2c038');
-  // marcação N em destaque (Norte da rosa dos ventos)
-  const nSize = Math.max(8, Math.round(r * 0.16));
-  ctx.fillStyle = '#0a1a2f';
+
+  // medalhão central: anel creme com aro fino e miolo dourado (acento --ouro)
+  const rc = r * 0.17;
+  fillCircle(ctx, cx, cy, rc,        '#f1e8d0');
+  ctx.strokeStyle = '#3f86a8'; ctx.lineWidth = Math.max(1, r * 0.012);
+  ctx.beginPath(); ctx.arc(cx, cy, rc, 0, Math.PI * 2); ctx.stroke();
+  fillCircle(ctx, cx, cy, rc * 0.5, '#f2c038');
+
+  // marcação sutil do Norte (orienta o OrbitPuzzle, sem competir com a rosa)
+  const nSize = Math.max(7, Math.round(r * 0.12));
+  ctx.fillStyle = 'rgba(20,46,72,0.85)';
   ctx.font = `bold ${nSize}px "Courier New", monospace`;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.fillText('N', cx, cy - Math.round(r * 0.84));
+  ctx.fillText('N', cx, cy - r * 0.74);
+  ctx.restore();
 }
 
 // cache de camadas estáticas das cenas (renderizadas uma vez por cena)
