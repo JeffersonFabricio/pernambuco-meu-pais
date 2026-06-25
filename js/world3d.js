@@ -44,8 +44,11 @@ globalThis.World3D = (() => {
   ];
 
   function tileVisible(col, row, districtUnlockedFn) {
-    if (col <= 1) return true;  // borda oceano sempre visível
+    if (col <= 1) return true;  // borda oeste (mangue/oceano) sempre visível
     const ci = Math.floor(col), ri = Math.floor(row);
+    // o MAR fura a névoa: oceano é cenário geográfico (sem concha/NPC/lição), então
+    // aparece mesmo fora de zona desbloqueada. A TERRA travada segue oculta.
+    if (MAP[ri] && MAP[ri][ci] === '~') return true;
     for (let d = 0; d < ZONE_BOUNDS.length; d++) {
       const z = ZONE_BOUNDS[d];
       if (ri >= z.r1 && ri <= z.r2 && ci >= z.c1 && ci <= z.c2) {
@@ -93,11 +96,11 @@ globalThis.World3D = (() => {
   /* 8*/['m', 'm', 'r', 'g', 'g', 'g', 'g', 'g', 'g', 'r', 'g', 'g', 'g', 'g', 'g', 'g', 'r', 'g', 'g', 'g', 'g', 'g', 'g', '~'],
   /* 9*/['m', 'm', 'r', '1', 'g', 'g', '2', 'g', 'g', 'r', 'g', '4', 'g', 'g', 'g', '3', 'r', 'g', '3', 'g', 'g', '4', 'g', '~'],
   /*10*/['m', 'm', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', '~'],
-  /*11*/['m', 'm', 'r', 'g', 'g', 'g', 'g', 'g', 'g', 'r', 'g', 'g', 'g', 'g', 'g', 'g', 'r', 'g', 'g', 'g', 'g', 'g', 'g', '~'],
-  /*12*/['m', 'm', 'r', 'g', 'g', 'g', 'g', 'g', 'g', 'r', 'g', '2', 'g', 'g', 'g', '2', 'r', '3', 'g', 'g', 'g', '3', 'g', '~'],
-  /*13*/['m', 'm', 'r', 'g', 'g', 'g', 'g', 'g', 'g', 'r', 'g', 'g', 'g', 'g', 'g', 'g', 'r', 'g', 'g', 'g', 'g', 'g', 'g', '~'],
-  /*14*/['m', 'm', 'r', 'g', 'g', 'g', 'g', 'g', 'g', 'r', 'g', 'g', 'g', 'g', 'g', 'g', 'r', 'g', 'g', 'g', 'g', 'g', 'g', '~'],
-  /*15*/['m', 'm', 'r', 'g', 'g', 'g', 'g', 'g', 'g', 'r', 'g', 'g', '2', 'g', 'g', 'g', 'r', 'g', '2', 'g', 'g', 'g', 'g', '~'],
+  /*11*/['m', 'm', 'r', 'm', 'g', 'g', 'g', 'g', 'g', 'r', 'g', 'g', 'g', 'g', 'g', 'g', 'r', 'g', 'g', 'g', 'g', 'g', 'g', '~'],
+  /*12*/['m', 'm', 'r', 'm', 'm', 'g', 'g', 'g', 'm', 'r', 'g', '2', 'g', 'g', 'g', '2', 'r', '3', 'g', 'g', 'g', '3', 'g', '~'],
+  /*13*/['m', 'm', 'r', 'm', 'w', 'g', 'g', 'g', 'g', 'r', 'g', 'g', 'g', 'g', 'g', 'g', 'r', 'g', 'g', 'g', 'g', 'g', 'g', '~'],
+  /*14*/['m', 'm', 'r', 'g', 'w', 'w', 'g', 'g', 'm', 'r', 'g', 'g', 'g', 'g', 'g', 'g', 'r', 'g', 'g', 'g', 'g', 'g', 'g', '~'],
+  /*15*/['m', 'm', 'r', 'm', 'm', 'w', 'g', 'g', 'g', 'r', 'g', 'g', '2', 'g', 'g', 'g', 'r', 'g', '2', 'g', 'g', 'g', 'g', '~'],
   /*16*/['m', 'm', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', '.', '~'],
   /*17*/['m', 'm', 'r', '1', 'g', 'g', 'g', 'g', 'g', 'r', 'g', '2', 'g', 'g', 'g', 'g', 'r', 'g', 'g', 'g', 'g', '.', '.', '~'],
   /*18*/['m', 'm', 'r', 'g', 'g', 'g', 'g', 'g', '2', 'r', 'g', 'g', 'g', 'g', 'g', '2', 'r', 'g', 'g', 'g', '.', '.', '~', '~'],
@@ -460,9 +463,32 @@ globalThis.World3D = (() => {
     drawBead(ctx, x, by, 6, color, true);
   }
 
+  // ---------- igreja como PRÉDIO (âncora de base no tile, cresce pra cima) ----------
+  // Não usa o quadro fixo de NPC (36px) — por isso a igreja não afunda mais. A porta
+  // (base de drawIgrejaMarias, em y+38*s) é ancorada na linha do chão do tile. Ver spec 006.
+  function drawChurchBuilding(ctx, npc, x, y) {
+    const s = 2;
+    const groundY = y + TH / 2;          // linha do chão (mesma dos pés dos NPCs)
+    const W = Math.round(22 * s);        // largura do corpo em drawIgrejaMarias
+    ctx.save(); ctx.globalAlpha = 0.20;  // sombra no chão
+    PR(ctx, x - W / 2, groundY - 1, W, 6, '#000');
+    ctx.restore();
+    drawIgrejaMarias(ctx, Math.round(x - W / 2), Math.round(groundY - 38 * s), s);
+    // label "IGREJA" acima da torre
+    const topY = Math.round(groundY - 38 * s - 27 * s);
+    const lw = npc.label.length * 4.5 + 6;
+    ctx.fillStyle = 'rgba(8,14,26,0.8)';
+    ctx.fillRect(x - lw / 2, topY - 12, lw, 11);
+    ctx.fillStyle = npc.color;
+    ctx.font = 'bold 7px "Courier New", monospace';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(npc.label, x, topY - 7);
+  }
+
   // ---------- NPC no mundo (sprites reais de sprites.js) ----------
   function drawNpc(ctx, t, npc) {
     const { x, y } = iso(npc.col, npc.row);
+    if (npc.key === 'asMarias') { drawChurchBuilding(ctx, npc, x, y); return; }
     const bob = Math.sin(t * 2.5 + npc.col * 0.8) * 1.2;
     const s = 2;
     const sw = 12 * s, sh = 18 * s;  // 24×36 px
@@ -490,6 +516,66 @@ globalThis.World3D = (() => {
     ctx.fillText(npc.label, x, fy - 7);
   }
 
+  // ---------- coqueiros (cenário da orla; props decorativos, não bloqueiam o passo) ----------
+  // Plantados em tiles de areia: orla norte (Beira-Mar / Dias de Chuva, de frente pro mar
+  // ao fundo) e costa SE (litoral do Cais, perto da igreja). Reusa o sprite coqueiro()
+  // de sprites.js, reduzido pra escala do mundo iso.
+  const COQUEIROS = [
+    { col: 11, row: 3,  d: 1 }, { col: 13, row: 3,  d: 1 }, { col: 16, row: 3,  d: 1 },
+    { col: 20, row: 3,  d: 2 }, { col: 22, row: 3,  d: 2 },
+    { col: 16, row: 22, d: 7 }, { col: 18, row: 20, d: 8 }, { col: 19, row: 19, d: 8 },
+  ];
+  function drawCoqueiro(ctx, col, row) {
+    const { x, y } = iso(col, row);
+    const baseY = y + TH / 2 + 1;
+    ctx.save(); ctx.globalAlpha = 0.16; PR(ctx, x - 7, baseY, 14, 4, '#000'); ctx.restore(); // sombra
+    ctx.save();
+    ctx.translate(x, baseY);
+    ctx.scale(0.5, 0.5);             // coqueiro() desenha ~64px; reduz pra ~32px de tronco + copa
+    ctx.translate(-x, -baseY);
+    coqueiro(ctx, x - 4, baseY, 64);
+    ctx.restore();
+  }
+
+  // ---------- Marco Zero: praça pavimentada + rosa dos ventos no chão (Recife Antigo, d0) ----------
+  // Marca a área central de Recife Antigo. Os tiles da praça são pavimentados (calçadão), mas
+  // continuam 'g' no MAP → caminháveis e SEM mexer em PHASE_NODES. A rosa é um decal de chão
+  // CACHEADO (gerado uma vez) e projetado no plano iso 2:1. Ver spec 006.
+  const MARCO_ZERO = { col: 6, row: 7, r: 38, raio: 2 };
+  function isMarcoZeroPlaza(col, row) {
+    return Math.abs(col - MARCO_ZERO.col) + Math.abs(row - MARCO_ZERO.row) <= MARCO_ZERO.raio;
+  }
+  let _rosaCache = null;
+  function rosaDecal() {
+    if (_rosaCache) return _rosaCache;
+    const sz = Math.ceil(MARCO_ZERO.r * 2) + 6;
+    const cv = document.createElement('canvas');
+    cv.width = sz; cv.height = sz;
+    drawRosaDosVentos(cv.getContext('2d'), sz / 2, sz / 2, MARCO_ZERO.r);
+    _rosaCache = cv;
+    return _rosaCache;
+  }
+  // Desenha a FATIA da rosa que cai NESTE tile (recorta ao losango), projetada no chão iso 2:1.
+  // Cada tile da praça desenha sua fatia na PRÓPRIA profundidade → a rosa fica completa (nenhum
+  // tile da frente pinta por cima) e objetos (NPCs/Maju) sempre ficam por cima. Ver spec 006.
+  function drawRosaSliceOnTile(ctx, col, row) {
+    const t = iso(col, row);
+    const c = iso(MARCO_ZERO.col, MARCO_ZERO.row);
+    const img = rosaDecal();
+    ctx.save();
+    ctx.beginPath();                       // clip ao losango do tile (em coords de tela)
+    ctx.moveTo(t.x, t.y);
+    ctx.lineTo(t.x + TW / 2, t.y + TH / 2);
+    ctx.lineTo(t.x, t.y + TH);
+    ctx.lineTo(t.x - TW / 2, t.y + TH / 2);
+    ctx.closePath();
+    ctx.clip();
+    ctx.translate(c.x, c.y + TH / 2);      // centro da rosa = centro da praça
+    ctx.scale(1, 0.5);
+    ctx.drawImage(img, -img.width / 2, -img.height / 2);
+    ctx.restore();
+  }
+
   // ---------- render principal ----------
   function draw(ctx, W, H, t, districtUnlockedFn, isDoneFn) {
     drawSky(ctx, W, H);
@@ -512,6 +598,10 @@ globalThis.World3D = (() => {
       if (!districtUnlockedFn(node.d)) continue;
       queue.push({ kind: 'node', node, depth: node.col + node.row + 0.4, done: isDoneFn ? isDoneFn(node.g) : false });
     }
+    for (const cq of COQUEIROS) {
+      if (!districtUnlockedFn(cq.d)) continue;
+      queue.push({ kind: 'coqueiro', col: cq.col, row: cq.row, depth: cq.col + cq.row + 0.45 });
+    }
     for (const npc of WORLD_NPCS) {
       queue.push({ kind: 'npc', npc, depth: npc.col + npc.row + 0.5 });
     }
@@ -528,7 +618,12 @@ globalThis.World3D = (() => {
           case 'w': water(ctx, x, y, t, false); break;
           case '.': diamond(ctx, x, y, '#e0d098', '#c0a868'); break;
           case 'a': reef(ctx, x, y); break;
-          case 'g': diamond(ctx, x, y, '#5a7838', '#3a5020'); break;
+          case 'g':
+            // chão lamacento no Manguezal (D3); calçadão na praça do Marco Zero (d0); grama nos demais
+            if (districtAt(col, row) === 3) diamond(ctx, x, y, '#5b5230', '#3e3820');
+            else if (isMarcoZeroPlaza(col, row)) { diamond(ctx, x, y, '#d8c8a8', '#b8a888'); drawRosaSliceOnTile(ctx, col, row); }
+            else diamond(ctx, x, y, '#5a7838', '#3a5020');
+            break;
           case 'r':
             diamond(ctx, x, y, '#545454', '#3a3a3a');
             ctx.strokeStyle = '#7a7a7a'; ctx.lineWidth = 0.5;
@@ -537,7 +632,7 @@ globalThis.World3D = (() => {
             ctx.stroke();
             break;
           case 'm':
-            diamond(ctx, x, y, '#2a4018', '#1a2e10');
+            diamond(ctx, x, y, '#473b22', '#2c2410');  // lama do mangue (terroso)
             mangrove(ctx, x, y, t);
             break;
           default: {
@@ -548,6 +643,8 @@ globalThis.World3D = (() => {
             }
           }
         }
+      } else if (item.kind === 'coqueiro') {
+        drawCoqueiro(ctx, item.col, item.row);
       } else if (item.kind === 'node') {
         drawNode(ctx, t, item.node, item.done);
       } else if (item.kind === 'npc') {
@@ -624,5 +721,6 @@ globalThis.World3D = (() => {
   }
 
   return { draw, update, nearSpot, nearNpc, spotScreen, nodeScreen, currentDistrict, districtName, reset, player,
-           worldNpcs: WORLD_NPCS, npcDraw: NPC_DRAW };
+           worldNpcs: WORLD_NPCS, npcDraw: NPC_DRAW,
+           walkable, tileVisible, phaseNodes: PHASE_NODES, marcoZero: MARCO_ZERO, coqueiros: COQUEIROS };
 })();

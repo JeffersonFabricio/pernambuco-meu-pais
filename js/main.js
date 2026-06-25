@@ -858,12 +858,13 @@
   function talkNpc(npc) {
     if (npc.ending && doneCount() >= TOTAL_PHASES) { startEnding(); return; }
 
-    // Igreja das Marias — gate narrativo: a cena cheia só abre depois de conhecer as duas
-    // avós (met.vova && met.vovoMae). Antes disso, dica genérica sem revelar qual avó falta
-    // (ADR-003). Não incrementa fase — é cena, não concha.
+    // Igreja N. S. da Piedade — a Vó Maria Rita (do céu) aparece só aqui DENTRO. A cena abre
+    // depois de conhecer a Vó Maria José viva (met.vova); ENTRAR na igreja revela a Maria Rita,
+    // reúne as duas Marias e ensina a lição do amor eterno. Antes disso, dica genérica que não
+    // revela quem falta (ADR-003). Não incrementa fase — é cena, não concha.
     if (npc.key === 'asMarias') {
       const jaViu = !!S.save.met.asMarias;
-      if (!S.save.met.vova || !S.save.met.vovoMae) {
+      if (!S.save.met.vova) {
         S.toast = { text: 'Ainda não é o momento...', t: 3.5, color: '#d9b25c', bg: 'rgba(20,14,4,0.92)', textColor: '#d9b25c' };
         return;
       }
@@ -871,9 +872,14 @@
       if (!lines?.length) return;
       startDialogue(lines, 7, () => {
         enterWorld();
+        S.save.met.vovoMae = true;   // a Maju viu a Vó Maria Rita dentro da igreja
         S.save.met.asMarias = true;
         save();
+        if (!jaViu) {
+          S.toast = { text: '✦ Lição aprendida', sub: 'O amor que vai pro céu não desaparece.', t: 5.5, color: '#f2c038', bg: 'rgba(20,12,4,0.94)', textColor: '#f2c038' };
+        }
       });
+      S.dlg.duo = ['vova', 'vovoMae']; // reencontro: as duas Marias aparecem juntas na cena
       return;
     }
 
@@ -1298,8 +1304,14 @@
         S.dlg.chars += dt * 42;
         {
           const cur = S.dlg.lines[S.dlg.i];
-          if (cur.who !== 'maju' && cur.who !== 'nar') S.dlg.right = cur.who;
-          if (cur.who !== 'nar') {
+          if (S.dlg.duo) {
+            // Reencontro das duas Marias (spec 004): as duas avós juntas na cena, Maju ao lado
+            const [ma, mb] = S.dlg.duo;
+            if (SPEAKERS[ma]) drawSpeaker(SPEAKERS[ma].body, 175, H - 230, cur.who === ma, t, 0);
+            if (SPEAKERS[mb]) drawSpeaker(SPEAKERS[mb].body, 255, H - 230, cur.who === mb, t, 1.0);
+            drawSpeaker(drawMaju, 50, H - 226, cur.who === 'maju', t, 1.2);
+          } else if (cur.who !== 'nar') {
+            if (cur.who !== 'maju') S.dlg.right = cur.who;
             if (S.dlg.right && SPEAKERS[S.dlg.right]) {
               drawSpeaker(SPEAKERS[S.dlg.right].body, 250, H - 230, cur.who === S.dlg.right, t, 0);
             }

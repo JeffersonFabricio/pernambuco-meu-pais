@@ -129,37 +129,40 @@ const MORTE_WORDS = ['morte', 'morrer', 'morreu', 'faleceu', 'partiu', 'despedid
   check('Conchas: completar tudo ainda dá 31', Object.keys(g.S.save.done).length === 31);
 }
 
-// --- Cenário: Igreja não dispara o reencontro sem conhecer as duas avós ---
-// Caso 1: nenhuma avó conhecida
+// --- Cenário: Igreja fechada até conhecer a Vó Maria José (viva) ---
+// Sem conhecer a Maria José no frevo, a igreja não revela a Maria Rita.
 {
   const g = loadGame(); g.S.mode = 'world';
   g.S.save.met.vova = false; g.S.save.met.vovoMae = false;
   const mode = g.W.talk('asMarias');
-  check('Gate (false/false): não entra em diálogo', mode !== 'dialogue', mode);
-  check('Gate (false/false): met.asMarias falsy', !g.S.save.met.asMarias);
-  check('Gate (false/false): toast de dica exibido', !!g.S.toast, g.S.toast);
-  check('Gate (false/false): dica não revela qual avó falta',
+  check('Gate (sem Maria José): não entra em diálogo', mode !== 'dialogue', mode);
+  check('Gate (sem Maria José): met.asMarias falsy', !g.S.save.met.asMarias);
+  check('Gate (sem Maria José): toast de dica exibido', !!g.S.toast, g.S.toast);
+  check('Gate (sem Maria José): dica não revela qual avó',
     !!g.S.toast && !/vova|vovoMae|josé|rita/i.test(g.S.toast.text),
     g.S.toast && g.S.toast.text);
 }
-// Caso 2: só vova conhecida
+// --- Cenário: O gate é só met.vova — a Vó Maria Rita aparece DENTRO da igreja ---
+// Mesmo sem met.vovoMae prévio (ela não é mais NPC do mundo), a igreja abre e, ao entrar,
+// a Maju vê a Maria Rita ali: isso marca met.vovoMae.
 {
   const g = loadGame(); g.S.mode = 'world';
   g.S.save.met.vova = true; g.S.save.met.vovoMae = false;
   const mode = g.W.talk('asMarias');
-  check('Gate (true/false): não entra em diálogo', mode !== 'dialogue', mode);
-  check('Gate (true/false): met.asMarias falsy', !g.S.save.met.asMarias);
+  check('Gate (com Maria José): entra na igreja', mode === 'dialogue', mode);
+  g.W.finish();
+  check('Igreja: ver a Maria Rita marca met.vovoMae', g.S.save.met.vovoMae === true, g.S.save.met.vovoMae);
+  check('Igreja: met.asMarias vira true', g.S.save.met.asMarias === true, g.S.save.met.asMarias);
 }
-// Caso 3: só vovoMae conhecida
+// --- Cenário: Vó Maria Rita não é NPC do mundo (aparição, só na cena) ---
 {
-  const g = loadGame(); g.S.mode = 'world';
-  g.S.save.met.vova = false; g.S.save.met.vovoMae = true;
-  const mode = g.W.talk('asMarias');
-  check('Gate (false/true): não entra em diálogo', mode !== 'dialogue', mode);
-  check('Gate (false/true): met.asMarias falsy', !g.S.save.met.asMarias);
+  const g = loadGame();
+  const wn = g.World3D.worldNpcs || [];
+  check('Maria Rita: fora de WORLD_NPCS (não fica no mangue)', !wn.some(n => n.key === 'vovoMae'), wn.map(n => n.key).join(','));
+  check('Maria Rita: segue como SPEAKER pra cena', typeof g.World3D.npcDraw?.asMarias === 'function');
 }
 
-// --- Cenário: Reencontro dispara após conhecer as duas avós ---
+// --- Cenário: Reencontro das duas Marias dentro da igreja ---
 {
   const g = loadGame(); g.S.mode = 'world';
   g.S.save.met.vova = true; g.S.save.met.vovoMae = true; g.S.save.met.asMarias = false;
@@ -233,15 +236,15 @@ const MORTE_WORDS = ['morte', 'morrer', 'morreu', 'faleceu', 'partiu', 'despedid
 // --- Cenário: Igreja inacessível enquanto d6/d7 estão na névoa ---
 {
   const g = loadGame(); g.S.mode = 'world';
-  // d6 = distrito 6; desbloqueado apenas se d0..d5 completos
-  // Com save vazio: d0 está desbloqueado, d6 não está
-  const d6Unlocked = g.W.unlocked(6);
-  check('Névoa: d6 bloqueado com save vazio', !d6Unlocked, d6Unlocked);
+  // Igreja à beira-mar no litoral de d7; d7 desbloqueia só com d0..d6 completos
+  // Com save vazio: d0 está desbloqueado, d7 não está
+  const d7Unlocked = g.W.unlocked(7);
+  check('Névoa: d7 bloqueado com save vazio', !d7Unlocked, d7Unlocked);
   // A entrada existe em WORLD_NPCS mas o tile não é visível (coberto pela névoa — tileVisible retorna false)
   const wn = g.World3D.worldNpcs || [];
   const igreja = wn.find(n => n.key === 'asMarias');
-  // Igreja pertence a d6; quando d6 bloqueado, o drawNpc não a renderiza
-  check('Névoa: igreja pertence ao distrito 6', !!igreja && igreja.d === 6, igreja && igreja.d);
+  // Igreja pertence a d7 (Beira do Mangue, litoral); quando d7 bloqueado, o drawNpc não a renderiza
+  check('Névoa: igreja pertence ao distrito 7', !!igreja && igreja.d === 7, igreja && igreja.d);
 }
 
 // --- Cenário: Jogo carrega e desenha a igreja e as avós sem exceção ---

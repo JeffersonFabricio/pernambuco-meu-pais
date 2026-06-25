@@ -322,8 +322,8 @@ function drawPais(ctx, x, y, s = U) {
   drawMap(ctx, MICA_MAP, MICA_PAL, x + Math.round(s * 4), y, s);
 }
 
-// Igreja das Marias: torre branca com sino dourado + as duas avós lado a lado.
-// Usado pela cena de reencontro (gate met.vova && met.vovoMae) — sem asset externo (Lei §5).
+// Igreja N. S. da Piedade: só o prédio (torre branca com sino dourado) — as Marias aparecem
+// na CENA do reencontro, não coladas na torre. Gate da cena: met.vova. Sem asset externo (Lei §5).
 function drawIgrejaMarias(ctx, x, y, s = 2) {
   // --- fachada da igreja ---
   const W = Math.round(22 * s);
@@ -353,11 +353,8 @@ function drawIgrejaMarias(ctx, x, y, s = 2) {
   // espadana/agulha
   PR(ctx, tx + Math.round(3 * s), y - Math.round(24 * s), Math.round(2 * s), Math.round(9 * s), '#f5efe0');
   PR(ctx, tx + Math.round(3.5 * s), y - Math.round(27 * s), Math.round(s), Math.round(4 * s), '#d9b25c');
-  // --- as duas avós lado a lado, abaixo da fachada ---
-  // vovó Maria José (vova) à esquerda
-  drawVova(ctx, x - Math.round(s * 2), y + Math.round(38 * s), s);
-  // vovó Maria Rita (vovoMae, do céu) à direita — com halo
-  drawVovoMae(ctx, x + Math.round(12 * s), y + Math.round(38 * s), s);
+  // No mundo, a igreja é só o prédio (Nossa Senhora da Piedade, à beira-mar). As duas avós —
+  // as Marias — aparecem JUNTAS na cena do reencontro (asMarias), não coladas na torre.
 }
 
 function drawCrab(ctx, x, y, s = U) { drawMap(ctx, CRAB_MAP, CRAB_PAL, x, y, s); }
