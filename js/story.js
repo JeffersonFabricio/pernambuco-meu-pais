@@ -399,7 +399,7 @@ STORY.meet = {
   // Reencontro já visto — fala curta
   asMariasAgain: [
     { who: 'vova',    text: 'Estamos aqui, Maju. As Marias da tua família, sempre juntas.' },
-    { who: 'vovoMae', text: 'O amor que nos une não tem fim. Vai com força, meu amor.' },
+    { who: 'vovoMae', text: 'O amor que nos une não tem fim. Sempre que tu voltar, a gente está aqui.' },
     { who: 'maju',    text: 'Amo vocês, minhas Marias.' },
   ],
 };
