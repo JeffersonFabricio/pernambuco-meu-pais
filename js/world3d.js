@@ -10,6 +10,7 @@ globalThis.World3D = (() => {
   // ---------- câmera dinâmica ----------
   // Valor inicial centrado na posição de start (col=5, row=3) para W=360 H=640
   let camX = 144, camY = 184;
+  let lastW = 360, lastH = 640;   // viewport do último draw/update (culling do tubarão)
 
   function isoBase(col, row) {
     return { x: (col - row) * TW / 2, y: (col + row) * TH / 2 };
@@ -578,6 +579,7 @@ globalThis.World3D = (() => {
 
   // ---------- render principal ----------
   function draw(ctx, W, H, t, districtUnlockedFn, isDoneFn) {
+    lastW = W; lastH = H;
     drawSky(ctx, W, H);
     drawSun(ctx);
     drawClouds(ctx, t);
@@ -606,6 +608,7 @@ globalThis.World3D = (() => {
       queue.push({ kind: 'npc', npc, depth: npc.col + npc.row + 0.5 });
     }
     queue.push({ kind: 'player', depth: player.col + player.row + 0.6 });
+    queue.push({ kind: 'shark', depth: shark.col + shark.row + 0.45 });   // ordenado na água
     queue.sort((a, b) => a.depth - b.depth);
 
     for (const item of queue) {
@@ -651,6 +654,8 @@ globalThis.World3D = (() => {
         if (districtUnlockedFn(item.npc.d)) drawNpc(ctx, t, item.npc);
       } else if (item.kind === 'player') {
         drawPlayer(ctx, t);
+      } else if (item.kind === 'shark') {
+        drawSharkWorld(ctx);
       }
     }
   }
@@ -711,6 +716,8 @@ globalThis.World3D = (() => {
   function update(dt, vx, vy, W, H, districtUnlockedFn) {
     movePlayer(vx, vy, dt, districtUnlockedFn);
     updateCamera(W, H, dt);
+    lastW = W; lastH = H;
+    stepShark(dt, districtUnlockedFn);
   }
 
   function reset(d) {
@@ -720,7 +727,103 @@ globalThis.World3D = (() => {
     camX = 0; camY = 0; // força re-centrar
   }
 
+  // ============================================================
+  // Tubarão ambiente (spec 006) — nada pelo MAR, cosmético.
+  // Vive sobre tiles d'água VISÍVEIS ('~' oceano sempre visível; 'w' rio quando
+  // o distrito abre). Movimento determinístico (sem Math.random) p/ ser testável
+  // via window.__world.stepShark / .shark. Estado efêmero (fora do save).
+  // ============================================================
+  const SHARK_SCALE = 2;     // proporção ao mundo: ~1 tile iso (≠ escala 3 do puzzle)
+  const SHARK_SPD = 1.1;     // tiles por segundo (ambiente, lento)
+  // direção no grid (col,row); screenDX = lado na tela (define o flip do sprite)
+  const SHARK_DIRS = {
+    E: { dc:  1, dr:  0, screenDX:  1 },
+    W: { dc: -1, dr:  0, screenDX: -1 },
+    S: { dc:  0, dr:  1, screenDX: -1 },
+    N: { dc:  0, dr: -1, screenDX:  1 },
+  };
+  const SHARK_CW = ['E', 'S', 'W', 'N'];   // ordem horária para virar
+  const sharkTurn = (d, k) => SHARK_CW[(SHARK_CW.indexOf(d) + k + 4) % 4];
+
+  const shark = { col: 12.5, row: 1.5, dir: 'S', bob: 0, tcol: undefined, trow: undefined };
+
+  function isSharkWater(col, row, unlockFn) {
+    const ci = Math.floor(col), ri = Math.floor(row);
+    if (ci < 0 || ci >= COLS || ri < 0 || ri >= ROWS) return false;
+    const tile = MAP[ri][ci];
+    if (tile !== '~' && tile !== 'w') return false;
+    return unlockFn ? tileVisible(ci, ri, unlockFn) : true;
+  }
+
+  // próxima direção: reto → direita → esquerda → ré; 1ª cujo próximo tile é água visível
+  function sharkNextDir(unlockFn) {
+    for (const k of [0, 1, 3, 2]) {
+      const d = sharkTurn(shark.dir, k);
+      const v = SHARK_DIRS[d];
+      if (isSharkWater(Math.floor(shark.col) + v.dc, Math.floor(shark.row) + v.dr, unlockFn)) return d;
+    }
+    return shark.dir;
+  }
+
+  // mira o centro do próximo tile de água (alvo FIXO por trecho — não recalcular a cada passo,
+  // senão o alvo "foge" ao cruzar a fronteira e o tubarão atravessa para a terra)
+  function sharkRetarget(unlockFn) {
+    shark.dir = sharkNextDir(unlockFn);
+    const v = SHARK_DIRS[shark.dir];
+    shark.tcol = Math.floor(shark.col) + 0.5 + v.dc;
+    shark.trow = Math.floor(shark.row) + 0.5 + v.dr;
+  }
+
+  function stepShark(dt, unlockFn) {
+    if (!(dt > 0)) return;
+    dt = Math.min(dt, 1);              // clamp defensivo
+    shark.bob += dt;
+    if (shark.tcol === undefined) sharkRetarget(unlockFn);   // init lazy (precisa do unlockFn)
+    const len = SHARK_SPD * dt;
+    const dx = shark.tcol - shark.col, dy = shark.trow - shark.row;
+    const dist = Math.abs(dx) + Math.abs(dy);   // trecho é axis-aligned: L1 = distância real
+    if (dist <= len || dist === 0) {
+      shark.col = shark.tcol; shark.row = shark.trow;   // snap ao centro do tile (determinístico)
+      sharkRetarget(unlockFn);
+    } else {
+      shark.col += Math.sign(dx) * len;
+      shark.row += Math.sign(dy) * len;
+    }
+  }
+
+  function sharkScreen() {
+    const p = iso(shark.col, shark.row);
+    return { sx: p.x, sy: p.y + TH / 2 };
+  }
+
+  function sharkSnapshot() {
+    const { sx, sy } = sharkScreen();
+    const v = SHARK_DIRS[shark.dir];
+    const m = TW;   // margem de ~1 tile para o culling
+    return {
+      col: shark.col, row: shark.row, sx, sy,
+      dir: shark.dir, vx: v.dc, vy: v.dr,
+      scale: SHARK_SCALE,
+      lane: (shark.dir === 'E' || shark.dir === 'W') ? 'col' : 'row',
+      flip: v.screenDX < 0,
+      onWater: isSharkWater(shark.col, shark.row, null),
+      visible: sx >= -m && sx <= lastW + m && sy >= -m && sy <= lastH + m,
+    };
+  }
+
+  function drawSharkWorld(ctx) {
+    const { sx, sy } = sharkScreen();
+    const s = SHARK_SCALE;
+    const flip = SHARK_DIRS[shark.dir].screenDX < 0;
+    const cy = sy + Math.sin(shark.bob * 1.6) * 1.5;   // bob suave
+    ctx.save(); ctx.globalAlpha = 0.18; ctx.fillStyle = '#0b2548';   // sombra na água
+    ctx.beginPath(); ctx.ellipse(sx, cy + 3.5 * s, 8 * s, 2.4, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+    drawShark(ctx, sx - 8 * s, cy - 3.5 * s, s, flip);
+  }
+
   return { draw, update, nearSpot, nearNpc, spotScreen, nodeScreen, currentDistrict, districtName, reset, player,
            worldNpcs: WORLD_NPCS, npcDraw: NPC_DRAW,
-           walkable, tileVisible, phaseNodes: PHASE_NODES, marcoZero: MARCO_ZERO, coqueiros: COQUEIROS };
+           walkable, tileVisible, phaseNodes: PHASE_NODES, marcoZero: MARCO_ZERO, coqueiros: COQUEIROS,
+           shark: sharkSnapshot, stepShark };
 })();

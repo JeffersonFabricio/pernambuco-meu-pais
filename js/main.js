@@ -1397,6 +1397,9 @@
     near: () => S.near && S.near.g,
     nearNpc: () => S.nearNpc && S.nearNpc.key,
     unlocked: d => districtUnlocked(d),
+    // tubarão ambiente (spec 006): snapshot + passo determinístico (delega ao World3D)
+    shark: () => World3D.shark(),
+    stepShark: dt => World3D.stepShark(dt, districtUnlocked),
     completeDistrict: d => { for (let k = 0; k < DISTRICT_SIZES[d]; k++) { S.save.done[DISTRICT_STARTS[d] + k] = true; } save(); },
     completeAll: () => { for (let g = 1; g <= TOTAL_PHASES; g++) { S.save.done[g] = true; } save(); },
     // testes de onboarding: zera o save inteiro e recarrega (fluxo de jogador novo).
