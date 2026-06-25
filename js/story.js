@@ -248,16 +248,19 @@ STORY.meet = {
     { who: 'maju', text: 'Pode deixar, painho!' },
   ],
   // Titio Jeff — praia de Boa Viagem
+  // Titio Jeff — Manguezal (d3): o titio da pedalada, que guia a Maju até a igreja das Marias
   jeff: [
     { who: 'jeff', text: 'Maju?! Sou eu, teu titio Jeff!' },
-    { who: 'maju', text: 'Titio Jeff! Não sabia que você tava aqui em Boa Viagem!' },
-    { who: 'jeff', text: 'Moro pertinho da praia. Vim te dar uma força com as conchas do mar.' },
-    { who: 'jeff', text: 'Repara nos arrecifes: o segredo daqui é ter paciência com a maré.' },
-    { who: 'maju', text: 'Valeu, titio! Com você por perto fica bem mais fácil!' },
+    { who: 'maju', text: 'Titio Jeff! O que você faz aqui no meio do mangue?' },
+    { who: 'jeff', text: 'Pedalando, sobrinha! Eu adoro cortar o mangue de bicicleta, sentindo o vento.' },
+    { who: 'jeff', text: 'O mangue parece só lama, mas é daqui que a vida toda do mar começa. Pra atravessar é preciso força nas pernas.' },
+    { who: 'jeff', text: 'Ó, guarda no coração: lá na beira-mar tem uma igrejinha, a de Nossa Senhora da Piedade.' },
+    { who: 'jeff', text: 'Quando tu tiver conhecido tuas duas vós, vai até lá — é onde as Marias da nossa família se reencontram.' },
+    { who: 'maju', text: 'As duas Marias, na igreja à beira-mar... vou guardar, titio!' },
   ],
   jeffAgain: [
-    { who: 'jeff', text: 'Bora, sobrinha! O mar do Recife é teu parceiro. Vai com calma nas conchas.' },
-    { who: 'maju', text: 'Tô indo, titio! Já já volto pra te mostrar o colar.' },
+    { who: 'jeff', text: 'Bora pedalar comigo, sobrinha! E não esquece: a igrejinha à beira-mar te espera, com as Marias.' },
+    { who: 'maju', text: 'Não esqueço, titio! Já já volto.' },
   ],
   // Vovó — Pátio do Frevo (Rua da Moeda)
   vova: [
@@ -301,9 +304,9 @@ STORY.meet = {
     { who: 'maju', text: 'Adoro vocês dois! Já já volto!' },
   ],
 
-  // Titio Renato — Manguezal (d3) — Padre Cícero e as promessas nordestinas
+  // Titio Renato — Boa Viagem (d1) — Padre Cícero e as promessas nordestinas
   renato: [
-    { who: 'renato', text: 'Maju! É o titio Renato, aqui no meio do manguezal!' },
+    { who: 'renato', text: 'Maju! É o titio Renato, aqui na praia de Boa Viagem!' },
     { who: 'maju',   text: 'Titio! Que alegria te ver por aqui!' },
     { who: 'renato', text: 'Vim te contar de uma devoção muito especial do nosso povo nordestino.' },
     { who: 'maju',   text: 'Me conta, titio! Adoro quando você conta histórias.' },
@@ -341,26 +344,8 @@ STORY.meet = {
     { who: 'bruno', text: 'Vai, sobrinha. O maracatu te acompanha em cada passo.' },
   ],
 
-  // Vovó materna (Vovó Maria, no céu) — Beira do Mangue (d7)
-  vovoMae: [
-    { who: 'nar',     text: 'A brisa do mangue traz um perfume de saudade. Uma figura luminosa surge entre as raízes.' },
-    { who: 'vovoMae', text: 'Maju... minha menina linda...' },
-    { who: 'maju',    text: 'Vovó?! Mas como... você tá aqui?' },
-    { who: 'vovoMae', text: 'Vim do céu só pra te ver, meu amor. Não podia perder.' },
-    { who: 'maju',    text: 'Então o céu é real, vovó?' },
-    { who: 'vovoMae', text: 'Real como o amor que sinto por ti. E esse amor não tem distância, não tem fim.' },
-    { who: 'vovoMae', text: 'Na nossa família, as meninas levam o nome de Maria no coração. Você também, minha Maju.' },
-    { who: 'maju',    text: 'Maria... como a mãe de Jesus?' },
-    { who: 'vovoMae', text: 'E como todas as avós, mães e filhas que vieram antes de ti. Maria é força, é ternura, é amor que não acaba.' },
-    { who: 'maju',    text: 'Então não preciso ter medo de nada.' },
-    { who: 'vovoMae', text: 'Nunca, minha flor. O amor que vai pro céu não desaparece — fica guardado no coração de quem fica.' },
-    { who: 'nar',     text: 'A figura luminosa sorri e some devagar entre as raízes do mangue, deixando um calor no ar.' },
-  ],
-  vovoMaeAgain: [
-    { who: 'vovoMae', text: 'Estou sempre por perto, minha Maju. Nunca estás sozinha.' },
-    { who: 'maju',    text: 'Sinto isso, vovó. Sinto mesmo.' },
-    { who: 'vovoMae', text: 'Vai, meu amor. O colar vai ficar lindo.' },
-  ],
+  // Vó Maria Rita (materna, do céu) NÃO tem cena solta no mundo: ela é uma aparição que surge
+  // só DENTRO da igreja (STORY.meet.asMarias, abaixo). Sua lição do amor eterno vive lá.
 
   // Reencontro com os pais (Jonatha + Micaele) no Cais da Alfândega (d8) — cena cheia
   osPais: [
@@ -385,18 +370,24 @@ STORY.meet = {
     { who: 'maju', text: 'Já tô indo! Amo vocês!' },
   ],
 
-  // Reencontro das duas Marias na igreja — cena cheia (gate: met.vova && met.vovoMae)
+  // Reencontro das duas Marias DENTRO da igreja — a Maju entra e encontra a Vó Maria José; a
+  // Vó Maria Rita (do céu) aparece ali. Cena cheia (gate: met.vova). Aqui mora a lição do amor
+  // eterno — a Maria Rita só surge neste momento, não como NPC do mundo.
   asMarias: [
-    { who: 'nar',     text: 'Na fronteira do mangue e da Rua da Moeda, uma igrejinha branca guarda um silêncio dourado.' },
+    { who: 'nar',     text: 'À beira-mar, a Maju empurra a porta da igrejinha de Nossa Senhora da Piedade. Lá dentro, um silêncio dourado.' },
     { who: 'maju',    text: 'Que paz é essa aqui dentro...' },
     { who: 'vova',    text: 'Maju! Que bom que vieste, minha netinha.' },
-    { who: 'vovoMae', text: 'Eu sabia que tu ia chegar até aqui, meu amor.' },
-    { who: 'maju',    text: 'Vovó! As duas... juntas? Mas como?' },
+    { who: 'maju',    text: 'Vó Maria José! E... quem é a senhora ao seu lado?' },
+    { who: 'vovoMae', text: 'Sou tua Vó Maria Rita, meu amor. Vim do céu só pra te ver — não podia perder esse dia.' },
+    { who: 'maju',    text: 'Do céu? Então o céu é real mesmo, vovó?' },
+    { who: 'vovoMae', text: 'Real como o amor que sinto por ti. E esse amor não tem distância, não tem fim.' },
+    { who: 'maju',    text: 'As duas Marias... juntas aqui na igreja. Mas como?' },
     { who: 'vova',    text: 'Quando o amor é grande, a distância some. Nem o céu separa o que é da família.' },
     { who: 'vovoMae', text: 'As Marias dessa família sempre se encontram de algum jeito, Maju.' },
     { who: 'maju',    text: 'Maria... o nome que vocês duas carregam. E a mainha também carrega no coração.' },
     { who: 'vova',    text: 'É um fio que passa de geração em geração, minha neta. Ternura, força e fé.' },
     { who: 'vovoMae', text: 'E esse fio também é teu, Maju. Você é feita do amor das duas Marias.' },
+    { who: 'vovoMae', text: 'Guarda isto: o amor que vai pro céu não desaparece — fica no coração de quem fica.' },
     { who: 'maju',    text: 'Nunca vou esquecer isso. Nunca.' },
     { who: 'nar',     text: 'A luz da tarde entra pelas janelas e envolve as três num abraço dourado.' },
   ],

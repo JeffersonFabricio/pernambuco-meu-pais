@@ -31,27 +31,34 @@ const CHARACTERS = {
              free: { dx: -52, dy: -176 }, world: { col: 5, row: 6 } },
   mica:    { name: 'MICAELE',       color: '#e87ab0', draw: drawMicaele, d: 0, kid: true,
              free: { dx:  52, dy: -176 }, world: { col: 4, row: 6 } },
-  jeff:    { name: 'TITIO JEFF',    color: '#f2a83a', draw: drawJeff, d: 1,
-             free: { dx: 0, dy: -176 }, world: { col: 13, row: 5 } },
+  // Titio Jeff — Manguezal (d3): o titio da pedalada, que guia a Maju até a igreja das Marias.
+  jeff:    { name: 'TITIO JEFF',    color: '#f2a83a', draw: drawJeff, d: 3,
+             free: { dx: 0, dy: -176 }, world: { col: 6, row: 13 } },
 
   ravi:    { name: 'PRIMO RAVI',    color: '#e07020', draw: drawRavi, d: 2, kid: true, lesson: LESSONS.primos,
              free: { dx: -52, dy: -176 }, world: { col: 18, row: 5, label: 'RAVI' } },
   nicolas: { name: 'PRIMO NICOLAS', color: '#2a8a3a', draw: drawNico, d: 2, kid: true, lesson: LESSONS.primos,
              free: { dx:  52, dy: -176 }, world: { col: 20, row: 5, label: 'NICOLAS' } },
 
-  renato:  { name: 'TITIO RENATO',  color: '#1e3a6e', draw: drawRenato, d: 3, lesson: LESSONS.fe,
-             free: { dx: 0, dy: -176 }, world: { col: 5, row: 13, label: 'RENATO', color: '#8b5e2a' } },
+  // Titio Renato — Boa Viagem (d1): Padre Cícero e as promessas nordestinas (lição de fé).
+  renato:  { name: 'TITIO RENATO',  color: '#1e3a6e', draw: drawRenato, d: 1, lesson: LESSONS.fe,
+             free: { dx: 0, dy: -176 }, world: { col: 13, row: 6, label: 'RENATO', color: '#8b5e2a' } },
   bruno:   { name: 'TITIO BRUNO',   color: '#8b5e2a', draw: drawBruno, d: 5, lesson: LESSONS.uniao,
              free: { dx: 0, dy: -176 }, world: { col: 18, row: 13, label: 'T. BRUNO', color: '#5a4030' } },
-  vova:    { name: 'VOVÓ',          color: '#c79bd0', draw: drawVova, d: 6,
+  // As duas Marias. A Vó Maria José (paterna, VIVA) é conhecida no frevo (d6). A Vó Maria Rita
+  // (materna, do CÉU) NÃO fica no mundo — é uma aparição: surge só DENTRO da igreja, na cena do
+  // reencontro (asMarias). Por isso ela não tem `world` nem `free` (não é NPC andável); segue
+  // como SPEAKER (drawVovoMae) pra aparecer na cena. A lição do amor eterno entra ali.
+  vova:    { name: 'VÓ MARIA JOSÉ',  color: '#c79bd0', draw: drawVova, d: 6,
              free: { dx: 0, dy: -176 }, world: { col: 4, row: 19 } },
-  vovoMae: { name: 'VOVÓ MARIA',    color: '#f0d878', draw: drawVovoMae, d: 7, lesson: LESSONS.amorCeu,
-             free: { dx: 0, dy: -176 }, world: { col: 12, row: 19 } },
-  // Igreja das Marias — cena de reencontro na fronteira d6↔d7 (gate met.vova && met.vovoMae,
-  // verificado em main.js/talkNpc). Só `world` (sem `free`): aparece no passeio, não no mundo
-  // livre. NÃO é concha — fora de PHASE_NODES (FF-DOM-2, TOTAL_PHASES=31).
-  asMarias: { name: 'IGREJA',       color: '#d9b25c', draw: drawIgrejaMarias, d: 6, scene: true,
-             world: { col: 6, row: 19, label: 'IGREJA' } },
+  vovoMae: { name: 'VÓ MARIA RITA',  color: '#f0d878', draw: drawVovoMae, d: 7, lesson: LESSONS.amorCeu },
+  // Igreja N. S. da Piedade — reencontro das duas Marias à beira-mar, no litoral de d7
+  // (Beira do Mangue), de frente pro mar aberto do SE. Gate met.vova (a Vó Maria Rita,
+  // do céu, aparece DENTRO da igreja; ver main.js/talkNpc); alcançável quando d7 abre.
+  // Só `world` (sem `free`): aparece no passeio, não no mundo livre. NÃO é concha —
+  // fora de PHASE_NODES (FF-DOM-2, TOTAL_PHASES=31).
+  asMarias: { name: 'IGREJA',       color: '#d9b25c', draw: drawIgrejaMarias, d: 7, scene: true,
+             world: { col: 15, row: 21, label: 'IGREJA' } },
   // Pais juntos no Cais da Alfândega (d8) — reencontro afetivo, sem ending, sem concha.
   osPais:  { name: 'PAINHO E MAINHA', color: '#3fae7a', draw: drawPais, d: 8,
              lesson: 'Coragem do painho e fé da mainha caminham com você.',
