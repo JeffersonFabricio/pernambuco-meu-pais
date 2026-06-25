@@ -1,7 +1,7 @@
 // ============================================================
 // Marés do Recife — 31 fases (9 capítulos, 3–4 conchas cada)
-// Cada engine aparece 3 ou 4 vezes; engine 5 (labirinto) removido.
-// e: motor do puzzle (1..4, 6..10) | anchor: id em STORY.levels
+// 16 motores; nenhum aparece mais que 3x; engine 5 (labirinto) desativado.
+// e: motor do puzzle (1..4, 6..16) | anchor: id em STORY.levels
 // ============================================================
 
 // Quantas conchas por bairro (soma = 31)
@@ -14,18 +14,18 @@ const DISTRICT_STARTS = (() => {
 const TOTAL_PHASES = DISTRICT_STARTS[8] + DISTRICT_SIZES[8] - 1; // 31
 
 const CHAPTERS = [
-  // ── 1. Recife Antigo ── 4 fases: engines 1 7 9 10
+  // ── 1. Recife Antigo ── 4 fases: engines 1 16(pipa) 11 10
   {
     id: 1, title: 'Dias de Sol', short: 'Sol', place: 'Recife Antigo',
     scene: 1, color: '#f2c038', cord: 'Cordão do Sol',
     fases: [
       { anchor: 1, e: 1 },
-      { t: 'Torre Malakoff',        e: 7,  fact: 'A Torre Malakoff era a porta do antigo Arsenal da Marinha. Hoje é mirante e observatório do céu.' },
+      { t: 'Torre Malakoff',        e: 16, fact: 'A Torre Malakoff era a porta do antigo Arsenal da Marinha. Hoje é mirante e observatório do céu.' },
       { t: 'Rosa dos Ventos',       e: 11, fact: 'A rosa dos ventos do Marco Zero foi desenhada pelo pintor pernambucano Cícero Dias.' },
       { t: 'Praça do Arsenal',      e: 10, fact: 'A Praça do Arsenal reúne feirinhas, livros e poesia de rua no coração do Bairro do Recife.' },
     ],
   },
-  // ── 2. Boa Viagem ── 4 fases: engines 2 3 6 8
+  // ── 2. Boa Viagem ── 4 fases: engines 2 3 6 12(jangada)
   {
     id: 2, title: 'Beira-Mar', short: 'Beira-Mar', place: 'Boa Viagem & Piedade',
     scene: 2, color: '#1d6fa3', cord: 'Cordão do Mar',
@@ -33,38 +33,38 @@ const CHAPTERS = [
       { anchor: 2, e: 2 },
       { anchor: 3, e: 3 },
       { t: 'Igrejinha de Boa Viagem', e: 6, fact: 'A igrejinha de Boa Viagem, do século XVII, deu nome à praia mais famosa do Recife.' },
-      { t: 'Parque Dona Lindu',       e: 8, fact: 'O Parque Dona Lindu, à beira-mar de Boa Viagem, foi desenhado pelo arquiteto Oscar Niemeyer.' },
+      { t: 'Parque Dona Lindu',       e: 12, fact: 'O Parque Dona Lindu, à beira-mar de Boa Viagem, foi desenhado pelo arquiteto Oscar Niemeyer.' },
     ],
   },
-  // ── 3. Recife na Chuva ── 4 fases: engines 4 1 7 8
+  // ── 3. Recife na Chuva ── 4 fases: engines 4 1 16(pipa) 13(pontes)
   {
     id: 3, title: 'Dias de Chuva', short: 'Chuva', place: 'Recife no inverno',
     scene: 4, color: '#7d9fb4', cord: 'Cordão da Chuva',
     fases: [
       { anchor: 4, e: 4 },
       { t: 'Inverno Recifense', e: 1, fact: 'No Recife, "inverno" não é frio: é chuva. E junho costuma ser o mês mais molhado do ano.' },
-      { t: 'Arco-Íris no Rio', e: 7, fact: 'Depois do pé d\'água, o sol volta e o Capibaribe vira um espelho de arco-íris.' },
-      { t: 'Capibaribe Cheio', e: 8, fact: 'Quando chove forte, o Capibaribe incha e a cidade conversa com ele por meio de suas pontes.' },
+      { t: 'Arco-Íris no Rio', e: 16, fact: 'Depois do pé d\'água, o sol volta e o Capibaribe vira um espelho de arco-íris.' },
+      { t: 'Capibaribe Cheio', e: 13, fact: 'Quando chove forte, o Capibaribe incha e a cidade conversa com ele por meio de suas pontes.' },
     ],
   },
-  // ── 4. Manguezal ── 4 fases: engines 2 9 3 6  (anchor 5 mudado p/ e:2)
+  // ── 4. Manguezal ── 4 fases: engines 2 9 14(caranguejo) 6  (anchor 5 = e:2)
   {
     id: 4, title: 'Coração de Mangue', short: 'Mangue', place: 'Manguezal do Capibaribe',
     scene: 5, color: '#8a5a3a', cord: 'Cordão da Lama',
     fases: [
       { anchor: 5, e: 2 },
       { t: 'Maré de Sizígia',  e: 9, fact: 'Na lua cheia e na lua nova, a maré sobe mais alto: os pescadores chamam de maré de sizígia.' },
-      { t: 'Rio das Capivaras', e: 3, fact: 'Capibaribe, em tupi, quer dizer "rio das capivaras". As capivaras ainda vivem nas margens.' },
+      { t: 'Rio das Capivaras', e: 14, fact: 'Capibaribe, em tupi, quer dizer "rio das capivaras". As capivaras ainda vivem nas margens.' },
       { t: 'Garças Brancas',   e: 6, fact: 'No fim da tarde, as garças brancas pontuam o verde do mangue como flores que pousam.' },
     ],
   },
-  // ── 5. Mercado de São José ── 3 fases: engines 6 10 7
+  // ── 5. Mercado de São José ── 3 fases: engines 6 15(renda) 7
   {
     id: 5, title: 'Cultura Viva', short: 'Cultura', place: 'Mercado de São José',
     scene: 6, color: '#c97bb6', cord: 'Cordão da Memória',
     fases: [
       { anchor: 6, e: 6 },
-      { t: 'Casa da Cultura', e: 10, fact: 'A Casa da Cultura já foi uma prisão. Hoje, cada antiga cela é uma lojinha de artesanato.' },
+      { t: 'Casa da Cultura', e: 15, fact: 'A Casa da Cultura já foi uma prisão. Hoje, cada antiga cela é uma lojinha de artesanato.' },
       { t: 'Bonecos Gigantes', e: 7, fact: 'Os bonecos gigantes, de papel e cola, são os colossos mansos do carnaval pernambucano.' },
     ],
   },
@@ -88,23 +88,23 @@ const CHAPTERS = [
       { t: 'Galo da Madrugada',   e: 10, fact: 'O Galo da Madrugada, que sai no sábado de carnaval, é considerado o maior bloco do mundo.' },
     ],
   },
-  // ── 8. Manguebeat ── 3 fases: engines 9 2 3
+  // ── 8. Manguebeat ── 3 fases: engines 9 2 14(caranguejo)
   {
     id: 8, title: 'Antenas do Mangue', short: 'Manguebeat', place: 'Beira do mangue',
     scene: 9, color: '#3f9b52', cord: 'Cordão da Antena',
     fases: [
       { anchor: 9, e: 9 },
       { t: 'Chico Science',   e: 2, fact: 'Chico Science misturou maracatu com rock e mudou a música brasileira nos anos 90.' },
-      { t: 'Da Lama ao Caos', e: 3, fact: '"Da Lama ao Caos", de 1994, é o disco-manifesto que apresentou o manguebeat ao mundo.' },
+      { t: 'Da Lama ao Caos', e: 14, fact: '"Da Lama ao Caos", de 1994, é o disco-manifesto que apresentou o manguebeat ao mundo.' },
     ],
   },
-  // ── 9. Maré Final ── 3 fases: engines 4 8 10(anchor)
+  // ── 9. Maré Final ── 3 fases: engines 13(pontes) 12(jangada) 10(anchor)
   {
     id: 9, title: 'Última Maré', short: 'Maré', place: 'Estuário do Capibaribe',
     scene: 10, color: '#8a3a8a', cord: 'Cordão do Poente',
     fases: [
-      { t: 'Veneza Brasileira',   e: 4, fact: 'Com rios, ilhas e dezenas de pontes, o Recife é chamado de Veneza Brasileira.' },
-      { t: 'Pescadores da Noite', e: 8, fact: 'Há quem pesque de noite no estuário, guiado só pela lua e pela memória.' },
+      { t: 'Veneza Brasileira',   e: 13, fact: 'Com rios, ilhas e dezenas de pontes, o Recife é chamado de Veneza Brasileira.' },
+      { t: 'Pescadores da Noite', e: 12, fact: 'Há quem pesque de noite no estuário, guiado só pela lua e pela memória.' },
       { anchor: 10, e: 10 },
     ],
   },
@@ -175,6 +175,11 @@ function engineCfg(e, g) {
     case 9:  return { sliders: tier === 2 ? 5 : 4 };
     case 10: return { n: tier === 2 ? 7 : 6, rocks: [8, 10, 12][tier] };
     case 11: return { rings: 3 + tier };
+    case 12: return { cols: 6, rows: 6 + tier, sand: 3 + tier };
+    case 13: return { grid: 3 + Math.min(1, tier), extra: 1 + tier };
+    case 14: return { holes: 6, target: 4 + tier, interval: [0.7, 0.6, 0.5][tier] };
+    case 15: return { pins: 4 + tier };
+    case 16: return { lanes: 3, targetH: 8 + tier * 2, ascRate: 2 + tier * 0.5 };
   }
   return {};
 }

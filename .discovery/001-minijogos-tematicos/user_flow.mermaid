@@ -1,0 +1,15 @@
+%% user_flow.mermaid — 001-minijogos-tematicos
+%% Fluxo macro de resolver uma concha com um motor temático NOVO.
+%% Process flow (não UI). O fluxo por concha é o já existente em DOMAIN.md §3;
+%% o que muda é que o motor invocado agora é um dos novos (cena=mecânica).
+
+flowchart LR
+    A[Mundo livre: Maju perto de um spot ativo] -->|ENTRAR| B[Intro: curiosidade do lugar]
+    B --> C{Motor da concha}
+    C -->|motor novo temático| D[Joga: jangada / pontes / caranguejo / renda / pipa]
+    C -->|motor existente| E[Joga: motor reatribuído ~2-3x max]
+    D --> F{Resolveu?}
+    E --> F
+    F -->|sim| G[Outro: marca done g + salva]
+    F -.->|errou / tenta de novo| C
+    G --> A

@@ -185,6 +185,11 @@ const PUZZLE_HINTS = {
   9: 'Arraste os cursores e toque em TOCAR. As setas mostram se sobe ou desce!',
   10: 'Toque nas setas para montar a rota e depois em ZARPAR. Desvie das pedras!',
   11: 'Toque em cada anel para girá-lo um passo. Alinhe todos os planetas no Norte da rosa dos ventos!',
+  12: 'Toque numa célula vizinha para remar. Leve a jangada pela corrente até o cais — fuja dos bancos de areia!',
+  13: 'Toque entre duas ilhas para erguer uma ponte. Ligue todas as ilhas numa só cidade!',
+  14: 'Toque no buraco assim que o caranguejo aparecer. Pegue os caranguejos antes que se escondam!',
+  15: 'Toque em cada alfinete para passar a linha. Cubra todos e termine a renda!',
+  16: 'Toque à esquerda/direita (ou incline o celular) para guiar a pipa. Desvie das correntes e suba bem alto!',
 };
 
 // ============================================================
