@@ -870,7 +870,7 @@
       }
       const lines = STORY.meet[jaViu ? 'asMariasAgain' : 'asMarias'] || STORY.meet.asMarias;
       if (!lines?.length) return;
-      startDialogue(lines, 7, () => {
+      startDialogue(lines, 11, () => {   // SCENES[11] = interior da igreja (spec 007)
         enterWorld();
         S.save.met.vovoMae = true;   // a Maju viu a Vó Maria Rita dentro da igreja
         S.save.met.asMarias = true;

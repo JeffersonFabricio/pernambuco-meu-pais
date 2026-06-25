@@ -1088,6 +1088,73 @@ const SCENES = {
       seaGlow(ctx, 180, 382, 576, t, 'rgba(255,224,150,0.45)');
     },
   },
+  11: {
+    s(ctx) { // Interior da Igreja N. S. da Piedade — nave dourada, o "silêncio dourado lá dentro"
+      // parede de fundo em âmbar, escurecendo do alto (penumbra da abóbada) ao piso
+      skyGrad(ctx, ['#2a1c0e', '#3d2912', '#54381a', '#6e4d26'], 0, 470);
+      PR(ctx, 0, 470, 360, 170, '#3a2812'); // piso de pedra
+      PR(ctx, 0, 470, 360, 4, 'rgba(242,192,90,0.18)'); // brilho na linha do piso
+
+      // arco da nave ao fundo (moldura dourada em torno do altar)
+      PR(ctx, 96, 150, 168, 320, '#1c1208'); // recesso escuro do altar-mor
+      PR(ctx, 96, 150, 168, 6, '#d9b25c');
+      PR(ctx, 96, 150, 6, 320, '#d9b25c');
+      PR(ctx, 258, 150, 6, 320, '#d9b25c');
+      // topo em arco pleno (degraus de pixel formando a curva)
+      for (let i = 0; i < 6; i++) {
+        const inset = [0, 10, 22, 36, 54, 80][i];
+        PR(ctx, 96 + inset, 150 - (i + 1) * 8, 168 - inset * 2, 8, '#d9b25c');
+        PR(ctx, 96 + inset + 6, 150 - (i + 1) * 8, 156 - inset * 2, 8, '#2a1c0e');
+      }
+
+      // vitral colorido atrás do altar — rosácea de losangos
+      const vit = ['#c0392b', '#2e6da4', '#f2c038', '#3f9b52', '#8a4a9e'];
+      for (let r = 0; r < 5; r++) {
+        for (let c = 0; c < 4; c++) {
+          const col = vit[(r + c) % vit.length];
+          PR(ctx, 116 + c * 32, 172 + r * 30, 28, 26, col);
+          PR(ctx, 116 + c * 32, 172 + r * 30, 28, 2, 'rgba(255,255,255,0.12)'); // chumbo do vitral
+        }
+      }
+      PR(ctx, 112, 168, 136, 4, '#3a2812'); // moldura do vitral
+      PR(ctx, 112, 320, 136, 4, '#3a2812');
+
+      // altar central diante do vitral
+      PR(ctx, 150, 360, 60, 50, '#caa15a'); // mesa do altar
+      PR(ctx, 150, 360, 60, 6, '#f2c038');
+      PR(ctx, 168, 410, 24, 60, '#9c7a3e'); // base
+      PR(ctx, 174, 332, 12, 28, '#d9b25c'); // cruz — haste
+      PR(ctx, 168, 340, 24, 8, '#d9b25c');  // cruz — travessa
+
+      // colunas laterais da nave (perspectiva: estreitam pro fundo)
+      [[20, 60], [300, 60], [44, 40], [284, 40]].forEach(([x, w]) => {
+        PR(ctx, x, 200, w, 270, '#4a341a');
+        PR(ctx, x, 200, 4, 270, 'rgba(242,192,90,0.22)'); // luz na quina
+      });
+
+      // bancos da nave (duas fileiras)
+      [430, 452].forEach(y => {
+        PR(ctx, 70, y, 90, 12, '#5a3f20');
+        PR(ctx, 200, y, 90, 12, '#5a3f20');
+        PR(ctx, 70, y, 90, 2, '#7a5a30');
+        PR(ctx, 200, y, 90, 2, '#7a5a30');
+      });
+    },
+    d(ctx, t) {
+      // velas tremeluzentes nos candelabros — chama oscila por sin(t)
+      const velas = [[120, 360], [240, 360], [60, 430], [300, 430]];
+      velas.forEach(([x, y], i) => {
+        const f = Math.sin(t * 6 + i * 1.7) * 2;
+        PR(ctx, x - 2, y, 4, 16, '#e8e0c8');               // corpo da vela
+        PR(ctx, x - 4, y - 8 + f, 8, 6, 'rgba(242,192,90,0.28)'); // halo
+        PR(ctx, x - 2, y - 10 + f, 4, 12, '#f2904a');      // chama externa
+        PR(ctx, x - 1, y - 12 + f, 2, 8, '#f2c038');       // núcleo dourado
+      });
+      // feixe dourado descendo sobre o altar (respiração lenta)
+      const beam = 0.10 + Math.sin(t * 1.2) * 0.05;
+      PR(ctx, 150, 156, 60, 210, `rgba(242,200,120,${beam})`);
+    },
+  },
 };
 
 function casaSilhueta(ctx, yBase, c = '#0d1525') {
