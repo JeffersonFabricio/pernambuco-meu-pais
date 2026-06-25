@@ -865,7 +865,7 @@
     if (npc.key === 'asMarias') {
       const jaViu = !!S.save.met.asMarias;
       if (!S.save.met.vova) {
-        S.toast = { text: 'Ainda não é o momento...', t: 3.5, color: '#d9b25c', bg: 'rgba(20,14,4,0.92)', textColor: '#d9b25c' };
+        S.toast = { text: 'A porta da Piedade vai abrir quando o coração estiver pronto.', t: 4.5, color: '#f2c038', bg: 'rgba(20,14,4,0.92)', textColor: '#f2c038' };
         return;
       }
       const lines = STORY.meet[jaViu ? 'asMariasAgain' : 'asMarias'] || STORY.meet.asMarias;
