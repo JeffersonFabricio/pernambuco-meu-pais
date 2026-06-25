@@ -541,7 +541,7 @@ globalThis.World3D = (() => {
   // Marca a área central de Recife Antigo. Os tiles da praça são pavimentados (calçadão), mas
   // continuam 'g' no MAP → caminháveis e SEM mexer em PHASE_NODES. A rosa é um decal de chão
   // CACHEADO (gerado uma vez) e projetado no plano iso 2:1. Ver spec 006.
-  const MARCO_ZERO = { col: 6, row: 7, r: 38, raio: 1 };
+  const MARCO_ZERO = { col: 6, row: 7, r: 38, raio: 2 };
   function isMarcoZeroPlaza(col, row) {
     return Math.abs(col - MARCO_ZERO.col) + Math.abs(row - MARCO_ZERO.row) <= MARCO_ZERO.raio;
   }
@@ -555,13 +555,23 @@ globalThis.World3D = (() => {
     _rosaCache = cv;
     return _rosaCache;
   }
-  function drawMarcoZero(ctx) {
-    const { x, y } = iso(MARCO_ZERO.col, MARCO_ZERO.row);
-    const cy = y + TH / 2;
+  // Desenha a FATIA da rosa que cai NESTE tile (recorta ao losango), projetada no chão iso 2:1.
+  // Cada tile da praça desenha sua fatia na PRÓPRIA profundidade → a rosa fica completa (nenhum
+  // tile da frente pinta por cima) e objetos (NPCs/Maju) sempre ficam por cima. Ver spec 006.
+  function drawRosaSliceOnTile(ctx, col, row) {
+    const t = iso(col, row);
+    const c = iso(MARCO_ZERO.col, MARCO_ZERO.row);
     const img = rosaDecal();
     ctx.save();
-    ctx.translate(x, cy);
-    ctx.scale(1, 0.5);   // projeta o círculo no plano do chão iso (2:1)
+    ctx.beginPath();                       // clip ao losango do tile (em coords de tela)
+    ctx.moveTo(t.x, t.y);
+    ctx.lineTo(t.x + TW / 2, t.y + TH / 2);
+    ctx.lineTo(t.x, t.y + TH);
+    ctx.lineTo(t.x - TW / 2, t.y + TH / 2);
+    ctx.closePath();
+    ctx.clip();
+    ctx.translate(c.x, c.y + TH / 2);      // centro da rosa = centro da praça
+    ctx.scale(1, 0.5);
     ctx.drawImage(img, -img.width / 2, -img.height / 2);
     ctx.restore();
   }
@@ -583,10 +593,6 @@ globalThis.World3D = (() => {
         if (!tileVisible(col, row, districtUnlockedFn)) continue;
         queue.push({ kind: 'tile', col, row, depth: col + row });
       }
-    }
-    // rosa do Marco Zero: decal de chão em d0 (sempre desbloqueado), logo acima do piso da praça
-    if (districtUnlockedFn(0)) {
-      queue.push({ kind: 'marcoZero', depth: MARCO_ZERO.col + MARCO_ZERO.row + 0.35 });
     }
     for (const node of PHASE_NODES) {
       if (!districtUnlockedFn(node.d)) continue;
@@ -615,7 +621,7 @@ globalThis.World3D = (() => {
           case 'g':
             // chão lamacento no Manguezal (D3); calçadão na praça do Marco Zero (d0); grama nos demais
             if (districtAt(col, row) === 3) diamond(ctx, x, y, '#5b5230', '#3e3820');
-            else if (isMarcoZeroPlaza(col, row)) diamond(ctx, x, y, '#d8c8a8', '#b8a888');
+            else if (isMarcoZeroPlaza(col, row)) { diamond(ctx, x, y, '#d8c8a8', '#b8a888'); drawRosaSliceOnTile(ctx, col, row); }
             else diamond(ctx, x, y, '#5a7838', '#3a5020');
             break;
           case 'r':
@@ -637,8 +643,6 @@ globalThis.World3D = (() => {
             }
           }
         }
-      } else if (item.kind === 'marcoZero') {
-        drawMarcoZero(ctx);
       } else if (item.kind === 'coqueiro') {
         drawCoqueiro(ctx, item.col, item.row);
       } else if (item.kind === 'node') {
