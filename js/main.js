@@ -1247,6 +1247,10 @@
     if (S.mode === 'world' && (e.key === 'Enter' || e.key === ' ' || k === 'e')) { e.preventDefault(); enterNear(); }
   });
   window.addEventListener('keyup', e => { keys[e.key.length === 1 ? e.key.toLowerCase() : e.key] = false; });
+  // inclinação do celular → motores que a aceitam (ex.: Pipa). Inócuo sem giroscópio (fallback no tap).
+  window.addEventListener('deviceorientation', e => {
+    if (S.mode === 'puzzle' && S.puzzle && S.puzzle.tilt && e.gamma != null) S.puzzle.tilt(e.gamma);
+  });
 
   function startTutorial() {
     // Fase 2: o mundo nasce já em modo livre; a guia dourada aponta pra Micaele, que dá as

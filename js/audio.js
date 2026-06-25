@@ -79,3 +79,5 @@ const AudioFX = (() => {
     drum(i)   { [this.alfaia, this.caixa, this.gongue, this.agbe][i].call(this); },
   };
 })();
+// Hook de teste: expõe AudioFX para o harness headless (window.__audio) — permite espiar win()/ok()/etc.
+if (typeof window !== 'undefined') window.__audio = AudioFX;

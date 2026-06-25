@@ -1,5 +1,5 @@
 // ============================================================
-// Marés do Recife — 10 motores de puzzle parametrizáveis
+// Marés do Recife — 16 motores de puzzle parametrizáveis
 // Interface: update(dt,t), draw(ctx,t), tap(x,y),
 //            dragStart/dragMove/dragEnd opcionais, solved:bool
 // Cada construtor recebe cfg (de engineCfg) com defaults.
@@ -1193,10 +1193,343 @@ class OrbitPuzzle {
   }
 }
 
+// ---------- 12: Jangada na Maré (navegar a corrente até o cais) ----------
+// Puzzle de solução: caminho start→cais garantido por construção (random walk);
+// areia = encalhe (reset, não trava). solvable/solution via BFS.
+class JangadaPuzzle {
+  constructor(cfg = {}) {
+    const cols = this.cols = cfg.cols || 6;
+    const rows = this.rows = cfg.rows || 7;
+    this.cs = Math.min(Math.floor(PA.w / cols), Math.floor((PA.h - 50) / rows));
+    this.x0 = PA.x + (PA.w - cols * this.cs) / 2;
+    this.y0 = PA.y + 14;
+    // gera caminho garantido do topo até a última linha (sempre navegável)
+    const m = Array.from({ length: rows }, () => Array(cols).fill('w'));
+    const sp = { r: 0, c: rnd(cols) };
+    let r = sp.r, c = sp.c, guard = 0;
+    const path = [[r, c]];
+    while (r < rows - 1 && guard++ < 2000) {
+      const opts = [[r + 1, c]];
+      if (c - 1 >= 0) opts.push([r, c - 1]);
+      if (c + 1 < cols) opts.push([r, c + 1]);
+      const [nr, nc] = opts[rnd(opts.length)];
+      r = nr; c = nc; path.push([r, c]);
+    }
+    const cp = { r, c };
+    const onPath = new Set(path.map(([a, b]) => `${a},${b}`));
+    // areia (encalhe) só fora do caminho — preserva a solubilidade
+    let placed = 0, g2 = 0;
+    const sand = cfg.sand || 3;
+    while (placed < sand && g2++ < 300) {
+      const rr = rnd(rows), cc = rnd(cols);
+      if (!onPath.has(`${rr},${cc}`) && m[rr][cc] === 'w') { m[rr][cc] = 's'; placed++; }
+    }
+    // garante um encalhe adjacente ao start (testabilidade do reset) se houver vão livre
+    for (const [dr, dc] of [[0, -1], [0, 1], [1, 0]]) {
+      const nr = sp.r + dr, nc = sp.c + dc;
+      if (nr >= 0 && nr < rows && nc >= 0 && nc < cols && !onPath.has(`${nr},${nc}`) && m[nr][nc] === 'w') { m[nr][nc] = 's'; break; }
+    }
+    m[cp.r][cp.c] = 'C';
+    this.map = m; this.start = sp; this.cais = cp;
+    this.p = { ...sp }; this.disp = { r: sp.r, c: sp.c }; this.flash = 0;
+    this.solvable = this._bfs(sp, cp) !== null;
+    this.solved = false;
+  }
+  _bfs(from, to) {
+    const key = p => `${p.r},${p.c}`;
+    const came = { [key(from)]: null };
+    const Q = [from];
+    while (Q.length) {
+      const u = Q.shift();
+      if (u.r === to.r && u.c === to.c) {
+        const path = []; let cur = key(u);
+        while (came[cur]) { const [pr, pc] = cur.split(',').map(Number); path.unshift({ r: pr, c: pc }); cur = came[cur]; }
+        return path;
+      }
+      for (const [dr, dc] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+        const nr = u.r + dr, nc = u.c + dc;
+        if (nr < 0 || nr >= this.rows || nc < 0 || nc >= this.cols) continue;
+        if (this.map[nr][nc] === 's') continue;
+        const k = `${nr},${nc}`;
+        if (came[k] !== undefined) continue;
+        came[k] = key(u); Q.push({ r: nr, c: nc });
+      }
+    }
+    return null;
+  }
+  _center(cell) { return { x: this.x0 + cell.c * this.cs + this.cs / 2, y: this.y0 + cell.r * this.cs + this.cs / 2 }; }
+  solution() { return (this._bfs(this.start, this.cais) || []).map(c => this._center(c)); }
+  tap(x, y) {
+    if (this.solved) return;
+    const c = Math.floor((x - this.x0) / this.cs), r = Math.floor((y - this.y0) / this.cs);
+    if (r < 0 || r >= this.rows || c < 0 || c >= this.cols) return;
+    if (Math.abs(r - this.p.r) + Math.abs(c - this.p.c) !== 1) return; // só vizinho ortogonal
+    const cell = this.map[r][c];
+    if (cell === 's') { AudioFX.splash(); this.flash = 0.6; this.p = { ...this.start }; return; }
+    this.p = { r, c }; AudioFX.step();
+    if (cell === 'C') { this.solved = true; AudioFX.win(); }
+  }
+  update(dt) {
+    if (this.flash > 0) this.flash -= dt;
+    this.disp.r = approach(this.disp.r, this.p.r, dt, 18);
+    this.disp.c = approach(this.disp.c, this.p.c, dt, 18);
+  }
+  draw(ctx, t) {
+    for (let r = 0; r < this.rows; r++) {
+      for (let c = 0; c < this.cols; c++) {
+        const x = this.x0 + c * this.cs, y = this.y0 + r * this.cs, cell = this.map[r][c];
+        if (cell === 's') {
+          PR(ctx, x, y, this.cs - 2, this.cs - 2, '#e8d49a');
+        } else if (cell === 'C') {
+          PR(ctx, x, y, this.cs - 2, this.cs - 2, '#8a5a3a');
+          pTxt(ctx, '⚓', x + this.cs / 2, y + this.cs / 2, this.cs * 0.5, '#f2c038');
+        } else {
+          PR(ctx, x, y, this.cs - 2, this.cs - 2, (r + c) % 2 ? '#1d6fa3' : '#2a85bd');
+          PR(ctx, x + 6, y + 10 + Math.sin(t * 2 + r + c) * 2, this.cs - 16, 2, '#bfe6f2');
+        }
+      }
+    }
+    const px = this.x0 + this.disp.c * this.cs, py = this.y0 + this.disp.r * this.cs;
+    const bob = Math.sin(t * 4) * 2;
+    PR(ctx, px + 6, py + this.cs * 0.45 + bob, this.cs - 14, 7, '#8a5a3a'); // tronco da jangada
+    PR(ctx, px + this.cs * 0.45, py + 6 + bob, 3, this.cs * 0.4, '#5a3a22'); // mastro
+    PR(ctx, px + this.cs * 0.5, py + 7 + bob, this.cs * 0.28, this.cs * 0.24, '#f5efe0'); // vela
+    if (this.flash > 0) { PR(ctx, PA.x, PA.y, PA.w, PA.h, `rgba(217,47,47,${this.flash * 0.35})`); pTxt(ctx, 'Encalhou! Volte à corrente.', 180, PA.y + 14, 13, '#ffd0d0'); }
+    pTxt(ctx, 'Leve a jangada até o ⚓ cais', 180, this.y0 + this.rows * this.cs + 16, 12, '#bfe6f2');
+  }
+}
+
+// ---------- 13: Pontes do Recife (ligar todas as ilhas) ----------
+// Puzzle de solução: ilhas crescidas conexas; solução = árvore geradora (BFS);
+// solved = grafo de pontes conexo. solvable true por construção.
+class PontesPuzzle {
+  constructor(cfg = {}) {
+    const n = this.n = Math.max(3, Math.min(5, cfg.grid || 4));
+    this.cs = Math.floor(Math.min(PA.w, PA.h - 50) / n);
+    this.x0 = PA.x + (PA.w - n * this.cs) / 2;
+    this.y0 = PA.y + 24;
+    const want = Math.min(n * n, n + 1 + (cfg.extra || 1));
+    const start = { r: rnd(n), c: rnd(n) };
+    const chosen = [start];
+    const inSet = new Set([`${start.r},${start.c}`]);
+    let guard = 0;
+    while (chosen.length < want && guard++ < 500) {
+      const base = chosen[rnd(chosen.length)];
+      for (const [dr, dc] of shuffle([[-1, 0], [1, 0], [0, -1], [0, 1]])) {
+        const nr = base.r + dr, nc = base.c + dc, k = `${nr},${nc}`;
+        if (nr >= 0 && nr < n && nc >= 0 && nc < n && !inSet.has(k)) { chosen.push({ r: nr, c: nc }); inSet.add(k); break; }
+      }
+    }
+    this.islands = chosen;
+    this.edges = [];
+    for (let i = 0; i < chosen.length; i++) for (let j = i + 1; j < chosen.length; j++) {
+      const a = chosen[i], b = chosen[j];
+      if (Math.abs(a.r - b.r) + Math.abs(a.c - b.c) === 1) this.edges.push({ a: i, b: j, on: false });
+    }
+    this.solIdx = this._spanningTree();
+    this.solvable = this.solIdx !== null;
+    this.solved = false;
+  }
+  _adj(filter) {
+    const adj = this.islands.map(() => []);
+    this.edges.forEach((e, ei) => { if (filter(e)) { adj[e.a].push({ to: e.b, ei }); adj[e.b].push({ to: e.a, ei }); } });
+    return adj;
+  }
+  _spanningTree() {
+    const adj = this._adj(() => true);
+    const seen = new Set([0]), q = [0], tree = [];
+    while (q.length) { const u = q.shift(); for (const { to, ei } of adj[u]) if (!seen.has(to)) { seen.add(to); tree.push(ei); q.push(to); } }
+    return seen.size === this.islands.length ? tree : null;
+  }
+  _connected() {
+    const adj = this._adj(e => e.on);
+    const seen = new Set([0]), q = [0];
+    while (q.length) { const u = q.shift(); for (const { to } of adj[u]) if (!seen.has(to)) { seen.add(to); q.push(to); } }
+    return seen.size === this.islands.length;
+  }
+  _islandXY(i) { const s = this.islands[i]; return { x: this.x0 + s.c * this.cs + this.cs / 2, y: this.y0 + s.r * this.cs + this.cs / 2 }; }
+  _edgeMid(e) { const a = this._islandXY(e.a), b = this._islandXY(e.b); return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 }; }
+  solution() { return this.solIdx.map(ei => this._edgeMid(this.edges[ei])); }
+  tap(x, y) {
+    if (this.solved) return;
+    let best = -1, bd = 1e9;
+    this.edges.forEach((e, ei) => { const m = this._edgeMid(e); const d = Math.hypot(x - m.x, y - m.y); if (d < bd) { bd = d; best = ei; } });
+    if (best < 0 || bd > this.cs * 0.5) return;
+    this.edges[best].on = !this.edges[best].on; AudioFX.flip();
+    if (this.islands.length > 1 && this._connected()) { this.solved = true; AudioFX.win(); }
+  }
+  update() {}
+  draw(ctx, t) {
+    this.edges.forEach(e => {
+      if (!e.on) return;
+      const a = this._islandXY(e.a), b = this._islandXY(e.b);
+      const horiz = a.y === b.y;
+      if (horiz) PR(ctx, Math.min(a.x, b.x), a.y - 4, Math.abs(a.x - b.x), 8, '#8a5a3a');
+      else PR(ctx, a.x - 4, Math.min(a.y, b.y), 8, Math.abs(a.y - b.y), '#8a5a3a');
+    });
+    this.islands.forEach((s, i) => {
+      const { x, y } = this._islandXY(i);
+      const rad = this.cs * 0.3;
+      PR(ctx, x - rad, y - rad, rad * 2, rad * 2, '#3f9b52');
+      PR(ctx, x - rad + 3, y - rad + 3, rad * 2 - 6, rad * 2 - 6, '#67b06b');
+    });
+    pTxt(ctx, this.solved ? '✦ Cidade conectada! ✦' : 'Toque entre as ilhas para erguer pontes', 180, PA.y + 8, 12, this.solved ? '#f2c038' : '#bfe6f2');
+  }
+}
+
+// ---------- 14: Caranguejo no Mangue (captura por tempo) ----------
+// Ação/timing: exposição em rotação determinística; erro/timeout não trava.
+class CaranguejoPuzzle {
+  constructor(cfg = {}) {
+    const n = this.n = cfg.holes || 6;
+    this.target = cfg.target || 5;
+    this.captures = 0;
+    this.cols = 3;
+    this.rows = Math.ceil(n / this.cols);
+    this.cell = Math.max(56, Math.floor(Math.min(PA.w / this.cols, (PA.h - 70) / this.rows))); // ≥56 → alvo ≥48px
+    this.x0 = PA.x + (PA.w - this.cols * this.cell) / 2;
+    this.y0 = PA.y + 40;
+    this.holes = Array.from({ length: n }, (_, i) => ({ i, up: false, timer: 0 }));
+    this.interval = cfg.interval || 0.6;
+    this.win = this.interval * 0.7;
+    this.t = 0; this.cursor = 0;
+    this.solved = false;
+  }
+  _holeRect(i) { const c = i % this.cols, r = Math.floor(i / this.cols); return [this.x0 + c * this.cell, this.y0 + r * this.cell, this.cell - 8, this.cell - 8]; }
+  update(dt) {
+    if (this.solved) return;
+    for (const h of this.holes) if (h.up) { h.timer -= dt; if (h.timer <= 0) h.up = false; }
+    this.t += dt;
+    while (this.t >= this.interval) {
+      this.t -= this.interval;
+      const h = this.holes[this.cursor % this.n]; this.cursor++;
+      h.up = true; h.timer = this.win;
+    }
+  }
+  tap(x, y) {
+    if (this.solved) return;
+    for (const h of this.holes) {
+      const [hx, hy, w, hh] = this._holeRect(h.i);
+      if (inBox(x, y, hx, hy, w, hh)) {
+        if (h.up) { h.up = false; this.captures++; AudioFX.ok(); if (this.captures >= this.target) { this.solved = true; AudioFX.win(); } }
+        else { this.captures = Math.max(0, this.captures); AudioFX.tap(); }
+        return;
+      }
+    }
+  }
+  draw(ctx, t) {
+    for (const h of this.holes) {
+      const [hx, hy, w, hh] = this._holeRect(h.i);
+      PR(ctx, hx, hy, w, hh, '#5a3a22'); // lama
+      PR(ctx, hx + 4, hy + 4, w - 8, hh - 8, '#8a5a3a');
+      if (h.up) drawCrab(ctx, hx + w / 2 - 7, hy + hh / 2 - 6, Math.max(1, Math.floor(w / 18)));
+    }
+    pTxt(ctx, `Caranguejos: ${this.captures}/${this.target}`, 180, this.y0 - 16, 13, '#67b06b');
+  }
+}
+
+// ---------- 16: Pipa no Vento (planar pelas correntes; tap + inclinação) ----------
+// Ação/timing: 1 lane bloqueada por nível (sempre há rota); colisão reseta a altura.
+class PipaPuzzle {
+  constructor(cfg = {}) {
+    this.lanes = Math.max(3, cfg.lanes || 3);
+    this.lane = Math.floor(this.lanes / 2);
+    this.h = 0;
+    this.targetH = cfg.targetH || 10;
+    this.ascRate = cfg.ascRate || 2;
+    this.ascent = 0;
+    this.block = [-1];
+    for (let lv = 1; lv <= this.targetH; lv++) this.block[lv] = (lv % 2 === 0) ? (lv % this.lanes) : -1;
+    this.solved = false; this.collide = 0;
+  }
+  _left() { if (this.lane > 0) this.lane--; }
+  _right() { if (this.lane < this.lanes - 1) this.lane++; }
+  tap(x, y) {
+    if (this.solved) return;
+    if (!inBox(x, y, PA.x, PA.y, PA.w, PA.h)) return;
+    if (x < PA.x + PA.w / 2) this._left(); else this._right();
+    AudioFX.tap();
+  }
+  tilt(gamma) {
+    if (this.solved) return;
+    if (gamma < -5) this._left(); else if (gamma > 5) this._right();
+  }
+  update(dt) {
+    if (this.solved) return;
+    if (this.collide > 0) this.collide -= dt;
+    this.ascent += dt * this.ascRate;
+    while (this.ascent >= 1) {
+      this.ascent -= 1;
+      const next = this.h + 1;
+      if (this.block[next] === this.lane) { this.h = 0; this.collide = 0.6; AudioFX.splash(); return; }
+      this.h = next;
+      if (this.h >= this.targetH) { this.solved = true; AudioFX.win(); return; }
+    }
+  }
+  draw(ctx, t) {
+    PR(ctx, PA.x, PA.y, PA.w, PA.h, '#7d9fb4'); // céu
+    const laneW = PA.w / this.lanes;
+    const next = Math.min(this.h + 1, this.targetH);
+    if (this.block[next] >= 0) PR(ctx, PA.x + this.block[next] * laneW, PA.y + 30, laneW, 16, '#5a6b7a'); // corrente adversa
+    const frac = this.h / this.targetH;
+    const ky = PA.y + PA.h - 30 - frac * (PA.h - 80);
+    const kx = PA.x + this.lane * laneW + laneW / 2;
+    const wob = Math.sin(t * 3) * 3;
+    PR(ctx, kx - 10, ky - 10, 20, 20, '#d92f2f'); // pipa (losango aprox.)
+    PR(ctx, kx - 5, ky - 5, 10, 10, '#f2c038');
+    PR(ctx, kx, ky + 10, 1, 20 + wob, '#f5efe0'); // linha
+    pTxt(ctx, this.solved ? '✦ Lá no alto! ✦' : `Altura ${this.h}/${this.targetH}`, 180, PA.y + 14, 13, this.solved ? '#f2c038' : '#fff8d0');
+  }
+}
+
+// ---------- 15: Renda de Bilro (traçar a linha por todos os alfinetes) ----------
+// Puzzle de solução: visitar todos os pinos; ordem livre (todos alcançáveis).
+class RendaPuzzle {
+  constructor(cfg = {}) {
+    const count = this.count = Math.max(4, Math.min(9, cfg.pins || 5));
+    this.cs = 70; // espaçamento > raio de toque (evita captura dupla)
+    const cols = 3, rows = Math.ceil(count / cols);
+    const gw = (cols - 1) * this.cs, gh = (rows - 1) * this.cs;
+    const ox = PA.x + (PA.w - gw) / 2, oy = PA.y + (PA.h - gh) / 2;
+    this.pins = [];
+    for (let i = 0; i < count; i++) {
+      const r = Math.floor(i / cols), c = i % cols;
+      this.pins.push({ x: ox + c * this.cs, y: oy + r * this.cs, done: false });
+    }
+    this.order = [];
+    this.solvable = true;
+    this.solved = false;
+  }
+  solution() { return this.pins.map(p => ({ x: p.x, y: p.y })); }
+  tap(x, y) {
+    if (this.solved) return;
+    let best = -1, bd = 1e9;
+    this.pins.forEach((p, i) => { const d = Math.hypot(x - p.x, y - p.y); if (d < bd) { bd = d; best = i; } });
+    if (best < 0 || bd > this.cs * 0.45) return; // fora do alcance de qualquer pino
+    if (this.pins[best].done) return;             // toque repetido no mesmo pino: não avança
+    this.pins[best].done = true; this.order.push(best); AudioFX.ok();
+    if (this.pins.every(p => p.done)) { this.solved = true; AudioFX.win(); }
+  }
+  update() {}
+  draw(ctx, t) {
+    for (let i = 1; i < this.order.length; i++) {
+      const a = this.pins[this.order[i - 1]], b = this.pins[this.order[i]];
+      const steps = 8;
+      for (let s = 0; s <= steps; s++) PR(ctx, a.x + (b.x - a.x) * s / steps - 1, a.y + (b.y - a.y) * s / steps - 1, 2, 2, '#f5efe0');
+    }
+    this.pins.forEach(p => {
+      PR(ctx, p.x - 4, p.y - 4, 8, 8, p.done ? '#f2c038' : '#9fb4d0');
+      PR(ctx, p.x - 1, p.y - 1, 2, 2, '#0a1a2f');
+    });
+    pTxt(ctx, `Renda: ${this.order.length}/${this.count} alfinetes`, 180, PA.y + 8, 12, '#c97bb6');
+  }
+}
+
 const PUZZLES = {
   1: LightsPuzzle, 2: MemoryPuzzle, 3: SharkPuzzle, 4: PipePuzzle, 5: MazePuzzle,
   6: ShadowPuzzle, 7: RhythmPuzzle, 8: SequencePuzzle, 9: MixerPuzzle, 10: RoutePuzzle,
   11: OrbitPuzzle,
+  12: JangadaPuzzle, 13: PontesPuzzle, 14: CaranguejoPuzzle, 15: RendaPuzzle, 16: PipaPuzzle,
 };
 // Hook de teste: expõe PUZZLES para o harness headless (window.__puzzles).
 // Não interfere com main.js, que usa PUZZLES diretamente (variável de escopo global).
