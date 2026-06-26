@@ -704,6 +704,14 @@ globalThis.World3D = (() => {
     return { x, y: y + TH / 2 };
   }
 
+  // posição de tela (px) do NPC do passeio (por key) — usada pela seta-guia de onboarding
+  function npcScreen(key) {
+    const npc = WORLD_NPCS.find(n => n.key === key);
+    if (!npc) return null;
+    const { x, y } = iso(npc.col, npc.row);
+    return { x, y: y + TH / 2 };
+  }
+
   function nearNpc(districtUnlockedFn) {
     for (const npc of WORLD_NPCS) {
       if (!districtUnlockedFn(npc.d)) continue;
@@ -822,7 +830,7 @@ globalThis.World3D = (() => {
     drawShark(ctx, sx - 8 * s, cy - 3.5 * s, s, flip);
   }
 
-  return { draw, update, nearSpot, nearNpc, spotScreen, nodeScreen, currentDistrict, districtName, reset, player,
+  return { draw, update, nearSpot, nearNpc, spotScreen, nodeScreen, npcScreen, currentDistrict, districtName, reset, player,
            worldNpcs: WORLD_NPCS, npcDraw: NPC_DRAW,
            walkable, tileVisible, phaseNodes: PHASE_NODES, marcoZero: MARCO_ZERO, coqueiros: COQUEIROS,
            shark: sharkSnapshot, stepShark };
