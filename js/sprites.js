@@ -1002,6 +1002,7 @@ const SCENES = {
       mangueRoots(ctx, 440);
       PR(ctx, 0, 440, 360, 200, '#4a3a28'); // lama
       PR(ctx, 0, 440, 360, 3, 'rgba(120,150,120,0.2)');
+      antena(ctx, 288, 478, 1, '#2a4a30'); // antena ao fundo, silhueta diurna (eco do manguebeat)
       for (let i = 0; i < 14; i++) {
         const x = (i * 61) % 360;
         const y = 460 + (i * 43) % 160;
@@ -1012,6 +1013,9 @@ const SCENES = {
       const bx = (t * 20) % 360;
       PR(ctx, bx, 500 + Math.sin(t * 3) * 4, 4, 4, '#6a5a42');
       PR(ctx, (bx + 180) % 360, 540 + Math.sin(t * 2.3) * 4, 3, 3, '#6a5a42');
+      // caranguejos andando na lama, em sentidos opostos (vida de fundo)
+      drawCrab(ctx, (t * 18 + 30) % 360, 448, 2);
+      drawCrab(ctx, 360 - (t * 25 + 200) % 360, 458, 2);
     },
   },
   6: {
@@ -1248,3 +1252,6 @@ function drawScene(n, ctx, t) {
   ctx.drawImage(cv, 0, 0);
   sc.d(ctx, t);
 }
+
+// Hook de teste: expõe SCENES e drawScene para o harness headless (spec 011).
+if (typeof window !== 'undefined') { window.__scenes = SCENES; window.__drawScene = drawScene; }
