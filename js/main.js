@@ -349,9 +349,8 @@
         S.toast = { text: `Ponte liberada → ${d + 2}. ${ZONE[d + 1].name}`, t: 4 };
         AudioFX.win();
       }
-      if (doneCount() >= TOTAL_PHASES && !S.save.fin) {
-        S.save.fin = true; save();
-        startEnding();
+      if (doneCount() >= TOTAL_PHASES && S.save.met.vovoMae && !S.save.fin) {
+        startEnding();   // gated por met.vovoMae — igreja das Marias obrigatória (ADR-008)
       } else {
         enterWorld();
         triggerBeaconAndPan(12);
@@ -458,8 +457,11 @@
 
   // ---------- final: o Vovô leva a Maju pelo céu ----------
   function startEnding() {
+    S.save.fin = true; save();   // marca o fim (idempotente; nunca regride o progresso)
     startDialogue(STORY.skyEnding, 10, () => { S.mode = 'ceu'; S.winT = 0; });
   }
+  // Porto do céu (spec 010): posição FOCAL da Vó Maria Rita — central, a jangada sobe até ela.
+  const CEU_RITA = { x: Math.round(W / 2), y: Math.round(H * 0.20) };
   function drawCeu(t) {
     skyGrad(ctx, ['#f2c038', '#f2904a', '#d95a4a', '#8a3a5a', '#3a2a55', '#161232', '#0a0a1e'], 0, H);
     stars(ctx, Math.min(90, 18 + Math.floor(t * 10)), H, S.t);
@@ -522,27 +524,44 @@
     drawMaju(ctx, 180 + 4, jy - 58, 3);
     PR(ctx, 165, jy - 30, 6, 6, 'rgba(255,248,208,0.8)'); // mãos dadas
 
-    // ---- Família aparece no céu como espíritos luminosos ----
-    const SOULS = [
-      { draw: drawJonatha, name: 'Painho',       sx: 48,  sy: Math.round(H * 0.34), t0: 3.0 },
-      { draw: drawMicaele, name: 'Mainha',        sx: 285, sy: Math.round(H * 0.31), t0: 3.6 },
-      { draw: drawJeff,    name: 'Titio Jeff',    sx: 40,  sy: Math.round(H * 0.22), t0: 4.2 },
-      { draw: drawPrimos,  name: 'Ravi & Nico',   sx: 272, sy: Math.round(H * 0.20), t0: 4.7 },
-      { draw: drawBruno,   name: 'Titio Bruno',   sx: 116, sy: Math.round(H * 0.14), t0: 5.2 },
-      { draw: drawRenato,  name: 'Titio Renato',  sx: 232, sy: Math.round(H * 0.11), t0: 5.7 },
-      { draw: drawVova,    name: 'Vovó',           sx: 54,  sy: Math.round(H * 0.08), t0: 6.1 },
-      { draw: drawVovoMae, name: 'Vovó Maria',    sx: 286, sy: Math.round(H * 0.06), t0: 6.6 },
+    // ---- Família = anel de luzes ao redor da Vó Maria Rita (spec 010) ----
+    // Entram em leque acima da jangada, escalonadas; a Vó Maria Rita fica no centro.
+    const FAMILY = [
+      { draw: drawJonatha, name: 'Painho',        a: Math.PI * 1.18, t0: 3.0 },
+      { draw: drawMicaele, name: 'Mainha',         a: Math.PI * 1.82, t0: 3.3 },
+      { draw: drawJeff,    name: 'Titio Jeff',     a: Math.PI * 1.32, t0: 3.6 },
+      { draw: drawRenato,  name: 'Titio Renato',   a: Math.PI * 1.68, t0: 3.9 },
+      { draw: drawBruno,   name: 'Titio Bruno',    a: Math.PI * 1.46, t0: 4.2 },
+      { draw: drawPrimos,  name: 'Ravi & Nico',    a: Math.PI * 1.54, t0: 4.5 },
+      { draw: drawVova,    name: 'Vó Maria José',  a: Math.PI * 1.00, t0: 4.8 },
     ];
-    for (const soul of SOULS) {
-      if (t < soul.t0) continue;
-      const ft = Math.min(1, (t - soul.t0) * 2);
+    const RX = 120, RY = 84;
+    for (const m of FAMILY) {
+      if (t < m.t0) continue;
+      const ft = Math.min(1, (t - m.t0) * 2);
+      const sx = Math.round(CEU_RITA.x + Math.cos(m.a) * RX);
+      const sy = Math.round(CEU_RITA.y + 14 + Math.sin(m.a) * RY);
       ctx.save();
-      ctx.globalAlpha = ft * 0.28;
-      PR(ctx, soul.sx - 5, soul.sy - 5, 30, 30, '#fff8d0');
+      ctx.globalAlpha = ft * 0.26;
+      PR(ctx, sx - 4, sy - 4, 26, 26, '#fff8d0');
+      ctx.globalAlpha = ft * 0.92;
+      m.draw(ctx, sx, sy, 2);
+      ctx.globalAlpha = ft * 0.82;
+      pTxt(ctx, m.name, sx + 8, sy + 20, 7, '#f0d878', 'center', false);
+      ctx.restore();
+    }
+
+    // ---- A Vó Maria Rita: FOCAL e central, o reencontro do porto do céu (só aparição) ----
+    if (t > 3.6) {
+      const ft = Math.min(1, (t - 3.6) * 1.6);
+      const glow = 0.5 + Math.sin(S.t * 1.6) * 0.12;
+      ctx.save();
+      ctx.globalAlpha = ft * glow;
+      PR(ctx, CEU_RITA.x - 24, CEU_RITA.y - 24, 64, 68, '#fff2c0');
       ctx.globalAlpha = ft;
-      soul.draw(ctx, soul.sx, soul.sy, 2);
-      ctx.globalAlpha = ft * 0.88;
-      pTxt(ctx, soul.name, soul.sx + 12, soul.sy + 22, 7, '#f0d878', 'center', false);
+      drawVovoMae(ctx, CEU_RITA.x - 6, CEU_RITA.y, 3);
+      ctx.globalAlpha = ft * 0.95;
+      pTxt(ctx, 'Vó Maria Rita', CEU_RITA.x + 6, CEU_RITA.y + 40, 9, '#fff2c0', 'center', false);
       ctx.restore();
     }
 
@@ -553,7 +572,7 @@
     if (t > 8.8) {
       ctx.save(); ctx.globalAlpha = Math.min(1, (t - 8.8) * 0.7);
       pTxt(ctx, 'Jonatha · Micaele · Jeff · Bruno', W / 2, H - 100, 10, '#f0d878', 'center', false);
-      pTxt(ctx, 'Renato · Ravi · Nicolas · Vovó · Vovó Maria', W / 2, H - 84, 10, '#f0d878', 'center', false);
+      pTxt(ctx, 'Renato · Ravi · Nicolas · Vó Maria José · Vó Maria Rita', W / 2, H - 84, 10, '#f0d878', 'center', false);
       ctx.restore();
     }
     if (t > 10) {
@@ -856,7 +875,9 @@
     save();
   }
   function talkNpc(npc) {
-    if (npc.ending && doneCount() >= TOTAL_PHASES) { startEnding(); return; }
+    // Desfecho gated por met.vovoMae: só sobe ao céu quem reencontrou a Vó Maria Rita
+    // na igrejinha da Piedade (ADR-003 abre a cena; ADR-008 a torna obrigatória pro fim).
+    if (npc.ending && doneCount() >= TOTAL_PHASES && S.save.met.vovoMae) { startEnding(); return; }
 
     // Igreja N. S. da Piedade — a Vó Maria Rita (do céu) aparece só aqui DENTRO. A cena abre
     // depois de conhecer a Vó Maria José viva (met.vova); ENTRAR na igreja revela a Maria Rita,
@@ -886,6 +907,11 @@
     // Vovô Maro: progresso dinâmico no cais (caso especial).
     if (npc.key === 'vovo') {
       S.save.met.vovo = true; save();
+      // Colar inteiro mas sem ter entrado na igrejinha → dica que aponta a Piedade (ADR-008).
+      if (doneCount() >= TOTAL_PHASES && !S.save.met.vovoMae) {
+        startDialogue(STORY.meet.vovoNeedsChurch, CHAPTERS[npc.d].scene, () => enterWorld());
+        return;
+      }
       startDialogue([
         { who: 'vovo', text: `Já são ${doneCount()} de ${TOTAL_PHASES} contas, minha neta. Falta pouco pro colar voltar inteiro.` },
         { who: 'maju', text: 'Tô quase lá, vovô! Não vou deixar o sol se pôr antes.' },
@@ -1088,7 +1114,7 @@
       let label, btn, col;
       if (S.nearNpc) {
         label = SPEAKERS[S.nearNpc.key].name;
-        btn = S.nearNpc.ending && doneCount() >= TOTAL_PHASES ? '★ SUBIR' : '★ FALAR';
+        btn = S.nearNpc.ending && doneCount() >= TOTAL_PHASES && S.save.met.vovoMae ? '★ SUBIR' : '★ FALAR';
         col = '#c98a3a';
       } else {
         label = S.near.title.length > 16 ? S.near.title.slice(0, 15) + '…' : S.near.title;
@@ -1423,5 +1449,8 @@
     },
     tryEnter: g => { const s = SPOTS.find(z => z.g === g); if (!s) return null; S.near = s; S.nearNpc = null; enterNear(); return S.mode; },
     finish: () => { let n = 0; while (S.mode === 'dialogue' && n++ < 300) dlgTap(); return S.mode; },
+    // desfecho no céu (spec 010): render testável headless + posição focal da Vó Maria Rita
+    drawCeu: t => drawCeu(t),
+    ceuFocal: () => ({ x: CEU_RITA.x, y: CEU_RITA.y, who: 'vovoMae' }),
   };
 })();

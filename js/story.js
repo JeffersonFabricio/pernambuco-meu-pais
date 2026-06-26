@@ -402,19 +402,28 @@ STORY.meet = {
     { who: 'vovoMae', text: 'O amor que nos une não tem fim. Sempre que tu voltar, a gente está aqui.' },
     { who: 'maju',    text: 'Amo vocês, minhas Marias.' },
   ],
+  // Dica do Vovô Maro quando o colar já está inteiro (31 conchas) mas a Maju ainda não
+  // entrou na igrejinha da Piedade — o desfecho é gated por met.vovoMae (ADR-008).
+  vovoNeedsChurch: [
+    { who: 'vovo', text: 'O colar tá inteiro, minha neta... mas falta um abraço antes da gente subir.' },
+    { who: 'maju', text: 'Um abraço, vovô?' },
+    { who: 'vovo', text: 'Passa na igrejinha da Piedade, ali na beira-mar. Tem uma Maria te esperando lá dentro.' },
+  ],
 };
 
-// Final: o Vovô leva a Maju pelo céu do Recife
+// Final: o Vovô Maro leva a Maju de jangada ao porto do céu, onde reencontram a Vó Maria Rita.
+// A Vó Maria Rita NÃO ganha falas aqui — o encontro é só aparição + narração (spec 010, ADR-008).
+// O desfecho é gated por met.vovoMae: a Maju só sobe depois de tê-la conhecido na igrejinha.
 STORY.skyEnding = [
   { who: 'vovo', text: 'Trinta e uma conchas, Maju. O colar voltou a brilhar inteiro.' },
   { who: 'maju', text: 'Conheci o Recife todinho, vovô. E reencontrei a família pelo caminho.' },
-  { who: 'maju', text: 'Painho, mainha, titio Jeff, titio Bruno, titio Renato, os primos, vovó... e até a vovó Maria que veio do céu me ver.' },
+  { who: 'maju', text: 'Painho, mainha, titio Jeff, titio Bruno, titio Renato, os primos, a vó Maria José... e a vó Maria Rita, que veio do céu me ver na igrejinha.' },
   { who: 'vovo', text: 'Esse é o maior tesouro, minha neta: a cidade e a gente que faz ela.' },
-  { who: 'vovo', text: 'Aprendeu muito nessa jornada: coragem, fé, promessa do Padrinho, o ritmo do tambor, amor que não tem fim.' },
-  { who: 'maju', text: 'Aprendi com cada um. E cada lição vai ficar aqui no peito pra sempre.' },
-  { who: 'vovo', text: 'Agora segura firme na minha mão. Vou te mostrar o Recife lá de cima.' },
-  { who: 'maju', text: 'Lá de cima, vovô?' },
-  { who: 'vovo', text: 'Sim. De onde a maré, o mangue, o frevo e o amor da família viram um só brilho.' },
+  { who: 'maju', text: 'Aprendi com cada um, vovô. Cada lição vai ficar aqui no peito pra sempre.' },
+  { who: 'vovo', text: 'Agora segura firme na minha mão. A jangada vai subir — tem alguém te esperando lá em cima.' },
+  { who: 'maju', text: 'Lá em cima, vovô?' },
+  { who: 'vovo', text: 'No porto do céu. De onde a maré, o frevo e o amor da família viram um só brilho.' },
   { who: 'nar',  text: 'A jangada se solta da água e sobe devagar, levando os dois pelo céu do Recife.' },
-  { who: 'nar',  text: 'E em cada estrela que passa, um rosto familiar sorri.' },
+  { who: 'nar',  text: 'E lá no alto, de braços abertos, a vó Maria Rita esperava — como tinha prometido na igrejinha.' },
+  { who: 'nar',  text: 'As duas Marias, o vovô Maro e a Maju: a família inteira reunida onde o amor não tem fim.' },
 ];

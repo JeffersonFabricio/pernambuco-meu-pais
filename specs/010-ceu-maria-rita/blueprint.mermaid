@@ -1,0 +1,21 @@
+flowchart TD
+    A[31ª concha coletada<br/>doneCount === TOTAL_PHASES] --> G{met.vovoMae?<br/>ADR-008}
+    G -- "não (igreja não visitada)" --> H[Vovô Maro: ★ FALAR<br/>dica → igreja das Marias]
+    H -. visita a igreja .-> G
+    G -- "sim" --> B{S.save.fin?}
+    B -- false --> C[S.save.fin = true · save · startEnding]
+    B -- "★ SUBIR no Vovô Maro<br/>(npc.ending, gate ok)" --> C
+
+    C --> D[startDialogue STORY.skyEnding]
+    D --> E[narração: jangada sobe<br/>+ porto do céu<br/>+ as duas Marias se reencontram]
+    E --> F[onEnd → S.mode = 'ceu' · S.winT = 0]
+
+    F --> G[drawCeu t : skyGrad + estrelas + lua]
+    G --> H[jangada SOBE até o porto do céu<br/>jy interpola pra perto da Vó]
+    H --> I[Vó Maria Rita FOCAL e central<br/>drawVovoMae em destaque · braços/halo]
+    I --> J[família = anel de luzes ao redor<br/>SOULS reposicionados como halo]
+    J --> K[os três no quadro:<br/>Vovô Maro + Maju + Vó Maria Rita]
+    K --> L[narração pTxt: amor que não tem fim]
+    L --> M[crédito 'Para Maria Júlia' · ✦ FIM ✦]
+    M --> N{toque · S.winT > 11}
+    N -- sim --> O[enterWorld — volta ao Recife]
