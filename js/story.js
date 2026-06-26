@@ -217,11 +217,11 @@ STORY.meet = {
   // Boas-vindas ao Recife — primeira conversa com a Micaele (recebe a Maju e encaminha pro painho)
   mica: [
     { who: 'mica', text: 'Maju! Que bom que chegou, minha filha! Bem-vinda ao Recife!' },
-    { who: 'maju', text: 'Mainha! Que cidade linda é essa toda?' },
-    { who: 'mica', text: 'É o Recife do teu sonho mais bonito. Foi aqui que a nossa história começou.' },
+    { who: 'maju', text: 'Mainha! Que cidade linda é essa?' },
+    { who: 'mica', text: 'Se chama Recife. Foi aqui que a nossa história começou.' },
     { who: 'mica', text: 'E hoje ele precisa de ti, meu amor, aconteceu uma coisa com o colar do vovô.' },
     { who: 'maju', text: 'O colar do vovô Maro? O que foi que aconteceu?' },
-    { who: 'mica', text: 'Vai falar com o teu painho ali, que ele te explica tudo direitinho.' },
+    { who: 'mica', text: 'Vai falar com o teu painho, que ele te explica tudo direitinho.' },
     { who: 'maju', text: 'Tô indo, mainha!' },
   ],
   // Reencontro com a mãe — mensagem motivadora curta
@@ -236,15 +236,15 @@ STORY.meet = {
   ],
   // Primeira conversa com o pai (após a Micaele) — explica a missão do colar (libera a seta)
   jona: [
-    { who: 'jona', text: 'Maju! Que orgulho ver minha menina aqui!' },
+    { who: 'jona', text: 'Maju! Que bom ver minha menina aqui!' },
     { who: 'jona', text: 'Aconteceu uma coisa hoje: o vovô Maro perdeu o colar das marés.' },
     { who: 'maju', text: 'O colar do vovô? O que guarda as histórias do Recife?' },
     { who: 'jona', text: 'Esse mesmo. As conchas se espalharam pela cidade inteira!' },
     { who: 'jona', text: 'O vovô parte com os jangadeiros ao pôr do sol. Precisa do colar inteiro antes.' },
     { who: 'maju', text: 'Então eu vou atrás delas! Por onde começo?' },
     { who: 'jona', text: 'As conchas brilham douradas pelo mapa. Chega perto de uma e toca em ENTRAR.' },
-    { who: 'jona', text: 'Cada bairro tem as suas. Completa todas e a ponte pro próximo se abre pra ti.' },
-    { who: 'jona', text: 'Segue a seta dourada, filha, e volta logo pro abraço do painho.' },
+    { who: 'jona', text: 'Cada bairro tem as suas. Completa todas e a ponte pro próximo se abre pra você.' },
+    { who: 'jona', text: 'Segue a seta dourada, filha.' },
     { who: 'maju', text: 'Esse colar volta inteirinho. Eu prometo!' },
   ],
   // Reencontro com o pai — mensagem motivadora curta

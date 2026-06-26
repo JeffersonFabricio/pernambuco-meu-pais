@@ -25,8 +25,6 @@
   //  ligam distritos vizinhos. Bairros se liberam em ordem.
   // ============================================================
   const WX = { cols: 3, rows: 3, cw: 420, ch: 620, gut: 12 };
-  const WORLD_W = WX.cols * WX.cw;   // 1260
-  const WORLD_H = WX.rows * WX.ch;   // 1860
 
   function districtCell(d) {
     const row = Math.floor(d / 3);
@@ -37,11 +35,6 @@
     const c = districtCell(d);
     return { x: c.x + WX.cw / 2, y: c.y + WX.ch / 2 };
   }
-  function landRect(d) {
-    const c = districtCell(d);
-    return { x: c.x + WX.gut, y: c.y + WX.gut, w: WX.cw - WX.gut * 2, h: WX.ch - WX.gut * 2 };
-  }
-
   const ZONE = [
     { g: '#d8c8a8', g2: '#c2b088', name: 'Recife Antigo' },   // 1 Sol
     { g: '#e6d29a', g2: '#d2b87c', name: 'Boa Viagem' },      // 2 Mar
@@ -191,13 +184,10 @@
     fadeT: 0.4,
     _lastMode: null,
     maju: { x: 0, y: 0, face: 'D', moving: false, phase: 0 },
-    cam: { x: 0, y: 0 },
     near: null,       // conta-spot mais próxima
     nearNpc: null,    // personagem mais próximo
     helpT: 7,
     toast: null,      // { text, t }
-    beacon: { active: false, t: 0 },     // seta guia para próxima conta
-    camPan: { dx: 0, dy: 0, t: 0 },     // pan de câmera pós-fase
   };
   const TRANS = 0.34;
 
@@ -357,25 +347,8 @@
         startEnding();   // gated por met.vovoMae — igreja das Marias obrigatória (ADR-008)
       } else {
         enterWorld();
-        triggerBeaconAndPan(12);
       }
     });
-  }
-
-  // ativa seta-guia + pan de câmera em direção à próxima conta
-  function triggerBeaconAndPan(beaconDuration) {
-    S.beacon.active = true;
-    S.beacon.t = beaconDuration;
-    const nxt = nextUndoneAnywhere();
-    if (nxt) {
-      const rawDx = nxt.x - S.maju.x;
-      const rawDy = nxt.y - S.maju.y;
-      const len = Math.hypot(rawDx, rawDy) || 1;
-      const scale = Math.min(160 / len, 1);
-      S.camPan.dx = rawDx * scale;
-      S.camPan.dy = rawDy * scale;
-      S.camPan.t = 1.8;
-    }
   }
 
   // ---------- card de recuperação de legado ----------
@@ -588,265 +561,6 @@
     if (t > 11 && Math.sin(t * 3) > 0) pTxt(ctx, '— toque para voltar ao Recife —', W / 2, H - 14, 11, '#bfe6f2');
   }
 
-  // ============================================================
-  //  MUNDO — fundo estático offscreen + camada animada
-  // ============================================================
-  let _worldBg = null;
-  function ensureWorldBg() {
-    if (_worldBg) return;
-    _worldBg = document.createElement('canvas');
-    _worldBg.width = WORLD_W; _worldBg.height = WORLD_H;
-    const b = _worldBg.getContext('2d');
-    PR(b, 0, 0, WORLD_W, WORLD_H, '#1a6593');
-    for (let i = 0; i < 240; i++) {
-      const x = (i * 137) % WORLD_W, y = (i * 271) % WORLD_H;
-      PR(b, x, y, 10, 2, 'rgba(120,190,225,0.10)');
-    }
-    for (let d = 0; d < 9; d++) {
-      const r = landRect(d);
-      const x = r.x, y = r.y, w = r.w, h = r.h;
-      PR(b, x, y, w, h, ZONE[d].g);
-      PR(b, x, y, w, 5, 'rgba(255,255,255,0.12)');
-      PR(b, x, y + h - 5, w, 5, 'rgba(0,0,0,0.14)');
-      for (let i = 0; i < 60; i++) {
-        const px = x + (i * 97) % w, py = y + (i * 131) % h;
-        PR(b, px, py, 3, 3, ZONE[d].g2);
-      }
-      decorate(b, d, x, y, w, h);
-      drawStreets(b, d);
-      const cc = districtCenter(d);
-      const c = districtCell(d);
-      const py = c.y + WX.ch - 30;
-      PR(b, cc.x - 86, py - 12, 172, 24, 'rgba(8,14,26,0.78)');
-      PR(b, cc.x - 86, py - 12, 172, 3, '#caa15a');
-      pTxt(b, `${d + 1}. ${ZONE[d].name}`, cc.x, py, 12, '#fff8d0');
-    }
-    for (let d = 0; d < 8; d++) drawPath(b, districtCenter(d), districtCenter(d + 1));
-  }
-
-  // ---------- malha de ruas do Recife (paralelepípedo + calçada) ----------
-  const RW = 24; // largura da rua
-  function roadH(b, x, yc, len, wave) {
-    const y = yc - RW / 2;
-    sidewalkStrip(b, x, y - 6, len, 6, wave);
-    sidewalkStrip(b, x, y + RW, len, 6, wave);
-    cobble(b, x, y, len, RW);
-    for (let i = 0; i * 18 < len; i++) PR(b, x + i * 18 + 5, yc - 1, 9, 2, 'rgba(240,230,180,0.45)');
-  }
-  function roadV(b, xc, y, len, wave) {
-    const x = xc - RW / 2;
-    sidewalkStrip(b, x - 6, y, 6, len, wave);
-    sidewalkStrip(b, x + RW, y, 6, len, wave);
-    cobble(b, x, y, RW, len);
-    for (let i = 0; i * 18 < len; i++) PR(b, xc - 1, y + i * 18 + 5, 2, 9, 'rgba(240,230,180,0.45)');
-  }
-  function praca(b, cx, cy, wave) {
-    const r = 22;
-    b.save(); b.beginPath(); b.arc(cx, cy, r, 0, Math.PI * 2); b.clip();
-    if (wave) calcadaPortuguesa(b, cx - r, cy - r, 2 * r, 2 * r);
-    else cobble(b, cx - r, cy - r, 2 * r, 2 * r, '#b4ac98', '#9a9080', '#c2b8a0');
-    b.restore();
-    b.beginPath(); b.arc(cx, cy, r, 0, Math.PI * 2); b.lineWidth = 3; b.strokeStyle = '#d8cba0'; b.stroke();
-  }
-  function drawStreets(b, d) {
-    const center = districtCenter(d);
-    const cols = gridCols(d), rows = gridRows(d);
-    const lr = landRect(d);
-    const wave = (d === 0 || d === 1); // calçada portuguesa nos cartões-postais
-    // avenidas centrais (cruzam o bairro até as bordas, p/ encontrar as pontes)
-    roadH(b, lr.x, center.y, lr.w, wave);
-    roadV(b, center.x, lr.y, lr.h, wave);
-    // ruas da grelha ligando as 9 contas
-    for (const ry of rows) roadH(b, cols[0], ry, cols[2] - cols[0], wave);
-    for (const cx of cols) roadV(b, cx, rows[0], rows[2] - rows[0], wave);
-    // faixa de pedestre nos 4 braços do cruzamento central
-    crosswalk(b, center.x - RW / 2, center.y - 40, RW, 12, false);
-    crosswalk(b, center.x - RW / 2, center.y + 28, RW, 12, false);
-    crosswalk(b, center.x - 40, center.y - RW / 2, 12, RW, true);
-    crosswalk(b, center.x + 28, center.y - RW / 2, 12, RW, true);
-    // uma pracinha em cada cruzamento (onde fica a conta)
-    for (const cx of cols) for (const ry of rows) praca(b, cx, ry, wave);
-    // postes e bueiros
-    lampPost(b, cols[0] - 30, rows[0] - 28); lampPost(b, cols[2] + 30, rows[2] - 28);
-    manhole(b, center.x + 40, center.y); manhole(b, cols[0], rows[2] + 30);
-  }
-
-  // ponte de madeira sobre o rio entre dois bairros (a avenida já cobre a terra)
-  function drawPath(b, a, c) {
-    const mx = (a.x + c.x) / 2, my = (a.y + c.y) / 2;
-    const half = 30; // cobre o rio (gutter 24) + as duas margens
-    if (a.y === c.y) {
-      PR(b, mx - half, my - 16, half * 2, 32, '#7a5230');               // deck
-      for (let i = 0; i * 7 < half * 2; i++) PR(b, mx - half + i * 7, my - 16, 2, 32, '#5a3a22');
-      PR(b, mx - half, my - 18, half * 2, 3, '#9c7a4c');                // corrimãos
-      PR(b, mx - half, my + 15, half * 2, 3, '#9c7a4c');
-      lampPost(b, mx - half + 4, my - 16); lampPost(b, mx + half - 4, my - 16);
-    } else {
-      PR(b, mx - 16, my - half, 32, half * 2, '#7a5230');
-      for (let i = 0; i * 7 < half * 2; i++) PR(b, mx - 16, my - half + i * 7, 32, 2, '#5a3a22');
-      PR(b, mx - 18, my - half, 3, half * 2, '#9c7a4c');
-      PR(b, mx + 15, my - half, 3, half * 2, '#9c7a4c');
-      lampPost(b, mx - 16, my - half + 8); lampPost(b, mx + 16, my - half + 8);
-    }
-  }
-
-  function decorate(b, d, x, y, w, h) {
-    switch (d) {
-      case 0: {
-        const cores = ['#d94f4f', '#e8b94a', '#5b8bd9', '#67b06b'];
-        for (let i = 0; i < 4; i++) {
-          const hw = 44, hy = y + 56, hx = x + 18 + i * ((w - 40 - hw) / 3);
-          PR(b, hx, hy, hw, 60, cores[i]);
-          PR(b, hx, hy, hw, 6, '#f5efe0');
-          PR(b, hx + 14, hy + 22, 16, 26, '#2a3a4f');
-        }
-        PR(b, x + w - 52, y + 28, 26, 88, '#f5efe0');
-        PR(b, x + w - 48, y + 14, 18, 16, '#caa15a');
-        break;
-      }
-      case 1: {
-        PR(b, x, y, w, 42, '#1d6fa3');
-        for (let k = 0; k < 6; k++) PR(b, x + 12 + k * 64, y + 18 + (k % 2) * 8, 26, 3, '#bfe6f2');
-        PR(b, x, y + 42, w, 8, '#efe0b0');
-        coqueiro(b, x + 44, y + 132, 64);
-        coqueiro(b, x + w - 46, y + 120, 52);
-        break;
-      }
-      case 2: {
-        cloud(b, x + 30, y + 26, 70, '#9aa8b2');
-        cloud(b, x + w - 110, y + 40, 84, '#8f9da7');
-        for (let i = 0; i < 3; i++) {
-          const hx = x + 24 + i * ((w - 80) / 2);
-          PR(b, hx, y + 70, 56, 56, '#6a7a86');
-          PR(b, hx, y + 70, 56, 5, '#8fa0ac');
-        }
-        PR(b, x + 30, y + 134, 70, 8, '#7d9fb4');
-        PR(b, x + w - 110, y + 128, 90, 8, '#7d9fb4');
-        break;
-      }
-      case 3: {
-        const p = { wood: '#5a3f28', woodD: '#3a2818', leaf: '#3a7042', leafD: '#2f5a35', leafL: '#54a25e' };
-        mangueTree(b, x + 54, y + 130, 60, p);
-        mangueTree(b, x + w / 2, y + 116, 52, p);
-        mangueTree(b, x + w - 56, y + 134, 66, p);
-        PR(b, x + 24, y + 150, 64, 10, '#3a5a45');
-        break;
-      }
-      case 4: {
-        const fc = ['#d94f4f', '#f2c038', '#5b8bd9', '#67b06b', '#c97bb6'];
-        PR(b, x + 10, y + 16, w - 20, 2, '#3a2a1a');
-        for (let i = 0; i * 24 < w - 20; i++) PR(b, x + 12 + i * 24, y + 18, 12, 10, fc[i % fc.length]);
-        for (let j = 0; j < 2; j++) {
-          const sx = x + 40 + j * (w - 160);
-          PR(b, sx, y + 50, 90, 40, '#8a5a3a');
-          for (let s = 0; s < 6; s++) PR(b, sx + s * 15, y + 42, 8, 12, s % 2 ? '#d94f4f' : '#f5efe0');
-        }
-        break;
-      }
-      case 5: {
-        for (let i = 0; i < 40; i++) PR(b, x + (i * 73) % w, y + (i * 53) % h, 1, 1, 'rgba(255,248,208,0.6)');
-        alfaiaDrum(b, x + 44, y + 70, 40, 56);
-        alfaiaDrum(b, x + w - 84, y + 84, 44, 60);
-        [x + 22, x + w - 26].forEach(tx => {
-          PR(b, tx, y + 44, 5, 50, '#4a3320');
-          PR(b, tx - 3, y + 32, 11, 14, '#e8762a');
-          PR(b, tx - 1, y + 28, 7, 9, '#f2c038');
-        });
-        break;
-      }
-      case 6: {
-        const cc = ['#d94f4f', '#f2c038', '#5b8bd9', '#67b06b', '#c97bb6'];
-        for (let i = 0; i < 44; i++) PR(b, x + (i * 61) % w, y + (i * 97) % h, 4, 4, cc[i % cc.length]);
-        sombrinha(b, x + 60, y + 72, 26, 0.3);
-        sombrinha(b, x + w / 2, y + 58, 24, 2.0);
-        sombrinha(b, x + w - 60, y + 90, 22, 1.1);
-        break;
-      }
-      case 7: {
-        const p = { wood: '#3a2818', woodD: '#241a10', leaf: '#2f5a35', leafD: '#244a2a', leafL: '#3f7042' };
-        antena(b, x + 52, y + 122, 1.2, '#1a2f26');
-        antena(b, x + w - 52, y + 132, 1, '#1a2f26');
-        mangueTree(b, x + w / 2, y + 120, 56, p);
-        break;
-      }
-      case 8: {
-        PR(b, x, y, w, 60, '#3a6a8a');
-        for (let k = 0; k < 6; k++) PR(b, x + 12 + k * 64, y + 26 + (k % 2) * 8, 24, 3, 'rgba(242,224,150,0.5)');
-        PR(b, x + w / 2 - 54, y + 50, 108, 22, '#6e4a2c');
-        for (let s = 0; s < 7; s++) PR(b, x + w / 2 - 50 + s * 15, y + 50, 2, 22, '#4a3320');
-        jangadaSil(b, x + 46, y + 128, 0.8, '#5a3a22');
-        jangadaSil(b, x + w - 50, y + 138, 0.7, '#5a3a22');
-        break;
-      }
-    }
-  }
-
-  // ---------- desenho de conta-spot e personagens no mundo ----------
-  function drawSpot(sp, sx, sy, near, t) {
-    const done = isDone(sp.g);
-    const active = !done && spotIsActive(sp);
-
-    // semente: conta ainda bloqueada no sequencial — pequena e apagada
-    if (!done && !active) {
-      ctx.save();
-      ctx.globalAlpha = 0.32 + 0.10 * Math.sin(t * 1.4 + sp.g);
-      drawBead(ctx, sx, sy - 6, 3, sp.color, false);
-      ctx.restore();
-      return;
-    }
-
-    const bob = Math.sin(t * 2 + sp.g) * 1.6;
-    PR(ctx, sx - 8, sy + 10, 16, 4, 'rgba(0,0,0,0.20)');
-    PR(ctx, sx - 2, sy - 6, 4, 16, '#6e4a2c');
-    const by = sy - 20 + bob;
-
-    // anel extra para o próximo spot a completar
-    if (active) {
-      ctx.save();
-      ctx.globalAlpha = 0.16 + 0.13 * Math.sin(t * 2.4);
-      drawBead(ctx, sx, by, 34, sp.color, true);
-      ctx.restore();
-    }
-    if (near) {
-      ctx.save();
-      ctx.globalAlpha = 0.30 + 0.22 * Math.sin(t * 6);
-      drawBead(ctx, sx, by, 20, sp.color, true);
-      ctx.restore();
-    }
-    if (sp.anchor) { PR(ctx, sx + 3, by - 16, 12, 8, '#f2c038'); PR(ctx, sx + 3, by - 16, 2, 14, '#6e4a2c'); }
-    drawBead(ctx, sx, by, done ? 9 : 8, sp.color, done);
-    pTxt(ctx, done ? '✓' : '?', sx, by, done ? 11 : 12, done ? '#fff' : '#fff8d0');
-  }
-
-  function drawNpc(npc, sx, sy, near, t) {
-    if (near) {
-      ctx.save(); ctx.globalAlpha = 0.25 + 0.2 * Math.sin(t * 6);
-      PR(ctx, sx - 24, sy - 30, 48, 56, SPEAKERS[npc.key].color); ctx.restore();
-    }
-    PR(ctx, sx - 13, sy + 14, 26, 6, 'rgba(0,0,0,0.22)');
-    const bob = Math.sin(t * 1.6 + npc.x) * 1.2;
-    npc.draw(ctx, sx - 18, sy - (npc.kid ? 40 : 42) + bob, 3);
-    pTxt(ctx, SPEAKERS[npc.key].name, sx, sy + 26, 9, '#fff8d0');
-  }
-
-  // ---------- colisão: andável = bairros liberados + pontes abertas ----------
-  function inRect(x, y, r, m) { return x >= r.x - m && x <= r.x + r.w + m && y >= r.y - m && y <= r.y + r.h + m; }
-  function bridgeOpen(d) { return districtUnlocked(d + 1); }
-  function onBridge(x, y) {
-    for (let d = 0; d < 8; d++) {
-      if (!bridgeOpen(d)) continue;
-      const a = districtCenter(d), c = districtCenter(d + 1);
-      if (a.y === c.y) {
-        if (Math.abs(x - (a.x + c.x) / 2) <= 26 && Math.abs(y - a.y) <= 16) return true;
-      } else if (Math.abs(y - (a.y + c.y) / 2) <= 26 && Math.abs(x - a.x) <= 16) return true;
-    }
-    return false;
-  }
-  function walkable(x, y) {
-    for (let d = 0; d < 9; d++) if (districtUnlocked(d) && inRect(x, y, landRect(d), 2)) return true;
-    return onBridge(x, y);
-  }
-
   // ---------- joystick + interação ----------
   const JOY = { active: false, baseX: 70, baseY: H - 78, R: 46, kx: 0, ky: 0 };
   const ENTER = { x: W - 152, y: H - 66, w: 142, h: 48 };
@@ -949,7 +663,6 @@
       // Jonatha (depois da Micaele) explica a missão: libera a entrada nas conchas + seta dourada.
       if (first && npc.key === 'jona') {
         S.save.briefed = true;
-        triggerBeaconAndPan(18);
         S.toast = { text: 'Siga a seta dourada até a primeira concha', t: 4.5 };
       }
       save();
@@ -960,140 +673,6 @@
     if (inBox(x, y, MUTE.x, MUTE.y, MUTE.w, MUTE.h)) { AudioFX.toggleMute(); AudioFX.tap(); return; }
     if ((S.near || S.nearNpc) && inBox(x, y, ENTER.x, ENTER.y, ENTER.w, ENTER.h)) { enterNear(); return; }
     if (x < 210 && y > H - 210) { JOY.active = true; updateJoy(x, y); }
-  }
-
-  function updateWorld(dt) {
-    let vx = 0, vy = 0;
-    if (JOY.active) { vx = JOY.kx / JOY.R; vy = JOY.ky / JOY.R; }
-    else {
-      if (keys.ArrowLeft || keys.a) vx -= 1;
-      if (keys.ArrowRight || keys.d) vx += 1;
-      if (keys.ArrowUp || keys.w) vy -= 1;
-      if (keys.ArrowDown || keys.s) vy += 1;
-      const m = Math.hypot(vx, vy);
-      if (m > 1) { vx /= m; vy /= m; }
-    }
-    const SPD = 158;
-    const px = S.maju.x, py = S.maju.y;
-    const nx = px + vx * SPD * dt, ny = py + vy * SPD * dt;
-    if (walkable(nx, S.maju.y)) S.maju.x = nx;
-    if (walkable(S.maju.x, ny)) S.maju.y = ny;
-    const moved = Math.hypot(S.maju.x - px, S.maju.y - py);
-    S.maju.phase += moved * 0.1;   // cadência dos passos ligada à distância andada
-    S.maju.moving = Math.hypot(vx, vy) > 0.08 && moved > 0.01;
-    if (S.maju.moving) {
-      if (Math.abs(vx) > Math.abs(vy)) S.maju.face = vx > 0 ? 'R' : 'L';
-      else S.maju.face = vy > 0 ? 'D' : 'U';
-    }
-    // personagem mais próximo (em bairro liberado)
-    let bn = null, bnd = 1e9;
-    for (const n of NPCS) {
-      if (!districtUnlocked(n.d)) continue;
-      const dd = Math.hypot(n.x - S.maju.x, n.y - S.maju.y);
-      if (dd < bnd) { bnd = dd; bn = n; }
-    }
-    S.nearNpc = (bn && bnd < 52) ? bn : null;
-    // conta mais próxima — apenas spots ativos (próximos) ou já feitos
-    let bs = null, bsd = 1e9;
-    for (const s of SPOTS) {
-      if (!districtUnlocked(s.d)) continue;
-      if (!isDone(s.g) && !spotIsActive(s)) continue;
-      const dd = Math.hypot(s.x - S.maju.x, s.y - S.maju.y);
-      if (dd < bsd) { bsd = dd; bs = s; }
-    }
-    S.near = (!S.nearNpc && bs && bsd < 46) ? bs : null;
-    if (S.helpT > 0) S.helpT -= dt;
-    if (S.toast) { S.toast.t -= dt; if (S.toast.t <= 0) S.toast = null; }
-    if (S.camPan.t > 0) S.camPan.t = Math.max(0, S.camPan.t - dt);
-    if (S.beacon.active) {
-      const tgt = nextUndoneAnywhere();
-      if (!tgt) {
-        S.beacon.active = false;
-      } else {
-        if (Math.hypot(tgt.x - S.maju.x, tgt.y - S.maju.y) < 72) {
-          S.beacon.t = Math.min(S.beacon.t, 1.4); // começa a sumir quando perto
-        }
-        S.beacon.t -= dt;
-        if (S.beacon.t <= 0) S.beacon.active = false;
-      }
-    }
-  }
-
-  function drawWorld(t) {
-    ensureWorldBg();
-    let panOffX = 0, panOffY = 0;
-    if (S.camPan.t > 0) {
-      const pct = Math.sin((S.camPan.t / 1.8) * Math.PI); // 0→1→0
-      panOffX = S.camPan.dx * pct;
-      panOffY = S.camPan.dy * pct;
-    }
-    const camX = Math.max(0, Math.min(WORLD_W - W, S.maju.x - W / 2 + panOffX));
-    const camY = Math.max(0, Math.min(WORLD_H - H, S.maju.y - H / 2 + panOffY));
-    S.cam.x = camX; S.cam.y = camY;
-    ctx.drawImage(_worldBg, camX, camY, W, H, 0, 0, W, H);
-    drawRiverFoam(camX, camY, t);
-    for (const s of SPOTS) {
-      if (!districtUnlocked(s.d)) continue;
-      const sx = s.x - camX, sy = s.y - camY;
-      if (sx < -30 || sx > W + 30 || sy < -40 || sy > H + 40) continue;
-      drawSpot(s, sx, sy, S.near === s, t);
-    }
-    for (const n of NPCS) {
-      if (!districtUnlocked(n.d)) continue;
-      const sx = n.x - camX, sy = n.y - camY;
-      if (sx < -40 || sx > W + 40 || sy < -60 || sy > H + 50) continue;
-      drawNpc(n, sx, sy, S.nearNpc === n, t);
-    }
-    drawMajuWalk(ctx, S.maju.x - camX, S.maju.y - camY, S.maju.face, S.maju.moving, S.maju.phase, t);
-    drawFog(camX, camY, t);
-    drawWorldHud(t);
-  }
-
-  // névoa sobre bairros bloqueados + barreira nas pontes fechadas
-  function drawFog(camX, camY, t) {
-    for (let d = 0; d < 9; d++) {
-      if (districtUnlocked(d)) continue;
-      const r = landRect(d);
-      const sx = r.x - camX, sy = r.y - camY;
-      if (sx > W || sy > H || sx + r.w < 0 || sy + r.h < 0) continue;
-      PR(ctx, sx, sy, r.w, r.h, 'rgba(10,14,24,0.82)');
-      const cc = districtCenter(d);
-      const cx = cc.x - camX, cy = cc.y - camY;
-      PR(ctx, cx - 11, cy - 6, 22, 18, '#3a4656'); // cadeado
-      PR(ctx, cx - 7, cy - 16, 14, 12, 'rgba(0,0,0,0)');
-      PR(ctx, cx - 7, cy - 16, 3, 10, '#3a4656');
-      PR(ctx, cx + 4, cy - 16, 3, 10, '#3a4656');
-      PR(ctx, cx - 7, cy - 16, 14, 3, '#3a4656');
-      pTxt(ctx, 'complete o bairro anterior', cx, cy + 28, 10, '#7a8a98');
-    }
-    for (let d = 0; d < 8; d++) {
-      if (bridgeOpen(d) || !districtUnlocked(d)) continue;
-      const a = districtCenter(d), c = districtCenter(d + 1);
-      const mx = (a.x + c.x) / 2 - camX, my = (a.y + c.y) / 2 - camY;
-      if (mx < -20 || mx > W + 20 || my < -20 || my > H + 20) continue;
-      ctx.fillStyle = '#caa15a';
-      pTxt(ctx, '⛓', mx, my, 18, '#e8d4b0');
-    }
-  }
-
-  function drawRiverFoam(camX, camY, t) {
-    const cols = [WX.cw, 2 * WX.cw], rows = [WX.ch, 2 * WX.ch];
-    for (const rx of cols) {
-      const sx = rx - camX;
-      if (sx < -14 || sx > W + 14) continue;
-      for (let wy = Math.floor(camY / 22) * 22; wy < camY + H; wy += 22) {
-        const off = Math.sin(t * 1.6 + wy * 0.06) * 5;
-        PR(ctx, sx - 7 + off, wy - camY, 9, 2, 'rgba(191,230,242,0.55)');
-      }
-    }
-    for (const ry of rows) {
-      const sy = ry - camY;
-      if (sy < -14 || sy > H + 14) continue;
-      for (let wx = Math.floor(camX / 22) * 22; wx < camX + W; wx += 22) {
-        const off = Math.sin(t * 1.6 + wx * 0.06) * 5;
-        PR(ctx, wx - camX, sy - 7 + off, 2, 9, 'rgba(191,230,242,0.55)');
-      }
-    }
   }
 
   function drawWorldHud(t) {
@@ -1209,26 +788,12 @@
   // guia de onboarding (Fase 2) — aponta pra Micaele e, depois dela, pro Jonatha (até briefed)
   function drawOnboardingGuide(t) {
     if (S.save.briefed) return;
-    const npc = NPCS.find(n => n.key === (!S.save.met.mica ? 'mica' : 'jona'));
+    const key = !S.save.met.mica ? 'mica' : 'jona';
+    const npc = NPCS.find(n => n.key === key);
     if (!npc || !districtUnlocked(npc.d)) return;
-    drawGuideArrow(npc.x - S.cam.x, npc.y - S.cam.y, t, !S.save.met.mica ? 'a mainha' : 'o painho');
-  }
-
-  function drawMinimap() {
-    const mw = 82, mh = 120, mx = W - mw - 12, my = 60;
-    panel(ctx, mx - 2, my - 2, mw + 4, mh + 4, 'rgba(8,14,26,0.82)', '#3a4a5f');
-    const sk = mw / WORLD_W, syk = mh / WORLD_H;
-    for (let d = 0; d < 9; d++) {
-      const c = districtCell(d);
-      const bx = mx + (c.x + WX.gut) * sk, byy = my + (c.y + WX.gut) * syk;
-      const bw = (WX.cw - WX.gut * 2) * sk, bh = (WX.ch - WX.gut * 2) * syk;
-      PR(ctx, bx, byy, bw, bh, districtUnlocked(d) ? ZONE[d].g : '#20262f');
-      if (!districtUnlocked(d)) PR(ctx, bx + bw / 2 - 1, byy + bh / 2 - 1, 3, 3, '#4a5663');
-    }
-    for (const s of SPOTS) if (isDone(s.g)) PR(ctx, mx + s.x * sk - 1, my + s.y * syk - 1, 2, 2, s.color);
-    for (const n of NPCS) if (districtUnlocked(n.d)) PR(ctx, mx + n.x * sk - 1, my + n.y * syk - 1, 3, 3, SPEAKERS[n.key].color);
-    PR(ctx, mx + S.maju.x * sk - 2, my + S.maju.y * syk - 2, 4, 4, '#fff');
-    PR(ctx, mx + S.maju.x * sk - 2, my + S.maju.y * syk - 2, 4, 1, '#f2c038');
+    const pos = World3D.npcScreen(key);          // posição iso real no passeio (não o layout 2D legado)
+    if (!pos) return;
+    drawGuideArrow(pos.x, pos.y, t, !S.save.met.mica ? 'a mainha' : 'o painho');
   }
 
   function enterWorld(d) {

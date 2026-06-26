@@ -44,7 +44,7 @@ const CHAPTERS = [
       { anchor: 4, e: 4 },
       { t: 'Inverno Recifense', e: 1, fact: 'No Recife, "inverno" não é frio: é chuva. E junho costuma ser o mês mais molhado do ano.' },
       { t: 'Arco-Íris no Rio', e: 16, fact: 'Depois do pé d\'água, o sol volta e o Capibaribe vira um espelho de arco-íris.' },
-      { t: 'Capibaribe Cheio', e: 13, fact: 'Quando chove forte, o Capibaribe incha e a cidade conversa com ele por meio de suas pontes.' },
+      { t: 'Capibaribe Cheio', e: 13, fact: 'Quando chove forte, o Capibaribe enche e a cidade conversa com ele por meio de suas pontes.' },
     ],
   },
   // ── 4. Manguezal ── 4 fases: engines 2 9 14(caranguejo) 6  (anchor 5 = e:2)
