@@ -20,6 +20,7 @@ const code = FILES.map(f => fs.readFileSync(path.join(ROOT, 'js', f), 'utf8')).j
 //   Cenário: Tamanho do tubarão é proporcional ao mundo
 //   Cenário: Sprite espelha conforme o sentido na tela
 //   Cenário: Tubarão só nada sobre águas visíveis (respeita a névoa)
+//   Cenário: Tubarão patrulha só o mar aberto e nunca encosta na costa
 //   Cenário: Movimento é determinístico
 //   Cenário: Tubarão é puramente cosmético — não toca o save nem a Maju
 //   Cenário: Jogo desenha o tubarão sem exceção e aplica culling
@@ -170,6 +171,23 @@ const LAND = new Set(['g', 'r', 'm', '.', 'a', '1', '2', '3', '4', '5', '6']);
     }
   }
   check('Névoa: tileVisible true em todos os passos', allVisible, JSON.stringify(bad));
+}
+
+// --- Cenário: Tubarão patrulha só o mar aberto, nunca encosta na costa ---
+// Regressão do bug "tubarão em terra": o sprite é mais alto que um tile e era pintado
+// por cima dos tiles de terra atrás dele (profundidade iso menor) quando nadava nas
+// faixas costeiras (coluna/linha de borda). Confinado ao mar aberto do norte (row ≤ 2),
+// onde só há água/horizonte atrás, ele nunca encobre terra. Condição do screenshot: tudo liberado.
+{
+  const g = loadGame();
+  for (let d = 0; d < 9; d++) g.W.completeDistrict(d);
+  let allOpenSea = true, bad = null;
+  for (let i = 0; i < 1000; i++) {
+    g.W.stepShark(0.1);
+    const sh = g.W.shark();
+    if (Math.floor(sh.row) > 2) { allOpenSea = false; bad = bad || [i, sh.col, sh.row]; }
+  }
+  check('Mar aberto: nunca alcança faixa costeira frontal (row ≤ 2) com tudo liberado', allOpenSea, JSON.stringify(bad));
 }
 
 // --- Cenário: Movimento é determinístico ---
